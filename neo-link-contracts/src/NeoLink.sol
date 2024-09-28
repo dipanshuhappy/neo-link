@@ -34,9 +34,9 @@ contract NeoLink is IERC721Receiver, IERC1155Receiver, ReentrancyGuard {
         uint40 reclaimableAfter; // for address-bound links, the sender is able to re-claim only after this timestamp
     } // 6 storage slots (32 byte each)
 
-    // We may include this hash in peanut-specific signatures to make sure
-    // that the message signed by the user has effects only in peanut contracts.
-    bytes32 public constant PEANUT_SALT = 0x70adbbeba9d4f0c82e28dd574f15466f75df0543b65f24460fc445813b5d94e0; // keccak256("Konrad makes tokens go woosh tadam");
+    // We may include this hash in neolink-specific signatures to make sure
+    // that the message signed by the user has effects only in neolink contracts.
+    bytes32 public constant NEOLINK_SALT = 0x70adbbeba9d4f0c82e28dd574f15466f75df0543b65f24460fc445813b5d94e0; // keccak256("Konrad makes tokens go woosh tadam");
 
     bytes32 public constant ANYONE_WITHDRAWAL_MODE = 0x0000000000000000000000000000000000000000000000000000000000000000; // default. Any address can trigger the withdrawal function
     bytes32 public constant RECIPIENT_WITHDRAWAL_MODE =
@@ -82,7 +82,7 @@ contract NeoLink is IERC721Receiver, IERC1155Receiver, ReentrancyGuard {
         emit MessageEvent("Hello World, have a nutty day!");
         ecoAddress = 0x8b5E4bA136D3a483aC9988C20CBF0018cC687E6f;
         DOMAIN_SEPARATOR = hash(
-            EIP712Domain({name: "Peanut", version: "4.2", chainId: block.chainid, verifyingContract: address(this)})
+            EIP712Domain({name: "NeoLink", version: "1", chainId: block.chainid, verifyingContract: address(this)})
         );
     }
 
@@ -551,7 +551,7 @@ contract NeoLink is IERC721Receiver, IERC1155Receiver, ReentrancyGuard {
     ) external nonReentrant returns (bool) {
         // Verify the MFA signature
         bytes32 digest = MessageHashUtils.toEthSignedMessageHash(
-            keccak256(abi.encodePacked(PEANUT_SALT, block.chainid, address(this), _index, _recipientAddress))
+            keccak256(abi.encodePacked(NEOLINK_SALT, block.chainid, address(this), _index, _recipientAddress))
         );
         address authorizationSigner = getSigner(digest, _MFASignature);
         require(authorizationSigner == MFA_AUTHORIZER, "WRONG MFA SIGNATURE");
@@ -604,7 +604,7 @@ contract NeoLink is IERC721Receiver, IERC1155Receiver, ReentrancyGuard {
             // Compute the hash of the withdrawal message
             bytes32 _recipientAddressHash = MessageHashUtils.toEthSignedMessageHash(
                 keccak256(
-                    abi.encodePacked(PEANUT_SALT, block.chainid, address(this), _index, _recipientAddress, _extraData)
+                    abi.encodePacked(NEOLINK_SALT, block.chainid, address(this), _index, _recipientAddress, _extraData)
                 )
             );
             depositSigner = getSigner(_recipientAddressHash, _signature);

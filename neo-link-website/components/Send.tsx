@@ -261,6 +261,7 @@ export default function SendPage() {
         txHash: txHash,
         url: `${window.location.origin}/claim`,
         seed: seed,
+        chainId: chainId.toString(),
       });
       alert(url);
     }

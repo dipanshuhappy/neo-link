@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Moon, Sun, Gift } from "lucide-react";
 import { ConnectWalletButton } from "@/components/NavBar";
@@ -10,6 +10,9 @@ import { Else, If, Then } from "react-if";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { encodeFunctionData } from "viem";
+import { generateKeyFromString, signWithdrawalMessage } from "@/lib/utils";
+import { neoLinkAbi, neoLinkAddress } from "@/lib/smart-contract";
 
 export default function EnhancedClaimPage() {
   const router = useRouter();
@@ -24,15 +27,71 @@ export default function EnhancedClaimPage() {
       document.documentElement.classList.remove("dark");
     }
   }, [isDarkMode]);
+  const searchParams = useSearchParams();
 
-  const handleClaim = () => {
+  const handleClaim = async () => {
     console.log(
       "Claiming assets",
       isGaslessClaim ? "gaslessly" : "with gas",
       "for address:",
       evmAddress
     );
-    // Add your claim logic here
+
+    const chainId = searchParams.get("c");
+    const seed = searchParams.get("s");
+    const depositId = searchParams.get("i");
+    if (!chainId || !seed || !depositId) {
+      alert("Invalid URL");
+      return;
+    }
+    const vaultAddress =
+      neoLinkAddress[parseInt(chainId) as keyof typeof neoLinkAddress];
+
+    if (!evmAddress) {
+      alert("Please enter your EVM address");
+      return;
+    }
+    if (!vaultAddress) {
+      alert("Vault address not found");
+      return;
+    }
+    const { recipient, depositIdx, signature } = await signWithdrawalMessage(
+      "1",
+      chainId.toString(),
+      vaultAddress,
+      parseInt(depositId),
+      evmAddress as `0x${string}`,
+      generateKeyFromString(seed).privateKey,
+      false
+    );
+    const data = encodeFunctionData({
+      abi: neoLinkAbi,
+      functionName: "withdrawDeposit",
+      args: [BigInt(depositIdx), recipient, signature],
+    });
+    try {
+      const response = await fetch("/api/send-transaction", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: vaultAddress,
+          data,
+          chainId: chainId,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Error in frontend:", response);
+        return;
+      }
+
+      const res = await response.json();
+      alert(`Transaction sent: ${res.hash}`);
+    } catch (err: any) {
+      console.error("Error in frontend:", err);
+    }
   };
 
   const toggleDarkMode = () => {
@@ -98,13 +157,7 @@ export default function EnhancedClaimPage() {
           </div>
           <div className="mb-6">
             <div className="flex items-center space-x-2">
-              <Checkbox
-                id="gaslessClaim"
-                checked={isGaslessClaim}
-                onCheckedChange={(checked) =>
-                  setIsGaslessClaim(checked as boolean)
-                }
-              />
+              <Checkbox id="gaslessClaim" checked={isGaslessClaim} />
               <Label
                 htmlFor="gaslessClaim"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"

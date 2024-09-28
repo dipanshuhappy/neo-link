@@ -16,7 +16,7 @@ if (!PRIVATE_KEY) {
 interface TransactionRequest {
   to: string;
   data: string;
-  chainId: number;
+  chainId: string;
 }
 
 export async function POST(request: Request) {
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const { to, data, chainId }: TransactionRequest = await request.json();
     const walletClient: WalletClient = createWalletClient({
       transport: http(),
-      chain: getChain(chainId as any as ValidChainId),
+      chain: getChain(parseInt(chainId) as ValidChainId),
       account: privateKeyToAccount(PRIVATE_KEY),
     });
 

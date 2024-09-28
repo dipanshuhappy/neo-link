@@ -100,11 +100,13 @@ export const getLinkForNativeToken = async ({
   txHash,
   url,
   seed,
+  chainId,
 }: {
   address: string;
   txHash: string;
   url: string;
   seed: string;
+  chainId: string;
 }) => {
   const receipt = await waitForTransactionReceipt(config, {
     hash: txHash as `0x${string}`,
@@ -119,5 +121,6 @@ export const getLinkForNativeToken = async ({
   const newUrl = new URL(url);
   newUrl.searchParams.set("i", logs[0].args._index.toString());
   newUrl.searchParams.set("s", seed);
+  newUrl.searchParams.set("c", chainId);
   return newUrl.toString();
 };

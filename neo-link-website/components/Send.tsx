@@ -265,6 +265,7 @@ export default function SendPage() {
           txHash: txHash,
           url: `${window.location.origin}/claim`,
           seed: seed,
+          chainId:chainId.toString()
         })
         alert(url)
       }
@@ -277,7 +278,15 @@ export default function SendPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+    if (selectedAsset === "Token") {
+      alert("not yet implemented");
+      return;
+    }
+    if (selectedAsset === "NFT") {
+      alert("not yet implemented");
+      return;
+    }
+
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode)

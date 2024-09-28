@@ -5,10 +5,10 @@ import NextLink from "next/link";
 import { ConnectWalletButton } from "./NavBar";
 
 const navItems = [
-  { name: "Send", icon: Zap },
-  { name: "Raffle", icon: Zap },
-  { name: "Airdrop", icon: Zap },
-  { name: "Doc", icon: Zap },
+  { name: "Send", icon: Zap, href: "/send", external: false },
+  { name: "Raffle", icon: Zap, href: "/raffle", external: false },
+  { name: "Airdrop", icon: Zap, href: "/airdrop", external: false },
+  { name: "Doc", icon: Zap, href: "https://example.com", external: true },  // External link
 ];
 
 export default function Header({ theme, toggleTheme }) {
@@ -31,7 +31,9 @@ export default function Header({ theme, toggleTheme }) {
             <NextLink
               key={index}
               className="text-m font-medium hover:text-[#00E676] transition-colors flex items-center gap-1"
-              href="#"
+              href={item.href || "/"}
+              // target="_blank"  // Open external link in a new tab
+              rel="noopener noreferrer"  // Security best practice when opening in new tab 
             >
               <item.icon className="h-4 w-4" />
               {item.name}

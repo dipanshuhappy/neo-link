@@ -4,6 +4,7 @@ import { NULL_ADDRESS } from "@/lib/constants";
 import { useWriteNeoLinkMakeCustomDeposit } from "@/lib/smart-contract";
 import { generateKeyFromString, getRandomString } from "@/lib/utils";
 import { useAccount } from "wagmi";
+import Send from '@/components/Send'
 
 export default function SendPage() {
   const { writeContractAsync } = useWriteNeoLinkMakeCustomDeposit();
@@ -32,7 +33,7 @@ export default function SendPage() {
   };
   return (
     <div>
-      <Button>JKJLJLK</Button>
+       <Send/>
     </div>
   );
 }

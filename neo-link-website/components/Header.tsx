@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Zap, ChevronDown, Moon, Sun } from "lucide-react";
 import NextLink from "next/link";
-import { Navbar } from "./NavBar";
+import { ConnectWalletButton } from "./NavBar";
 
 const navItems = [
   { name: "Send", icon: Zap },
@@ -48,8 +48,8 @@ export default function Header({ theme, toggleTheme }) {
             ) : (
               <Moon className="h-4 w-4" />
             )}
-          </button>
-          <Navbar />
+          </button> 
+          <ConnectWalletButton />
           <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
             <ChevronDown
               className={`h-4 w-4 transition-transform ${

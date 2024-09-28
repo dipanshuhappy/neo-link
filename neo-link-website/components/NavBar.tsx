@@ -45,7 +45,7 @@ export default function WalletConnect() {
   );
 }
 
-export function Navbar({ className }: { className?: string }) {
+export function ConnectWalletButton({ className }: { className?: string }) {
   const account = useAccount();
   const { disconnect } = useDisconnect();
 

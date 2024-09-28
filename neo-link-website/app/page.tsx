@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Zap, User, MessageCircle, ChevronDown } from "lucide-react"
@@ -9,6 +10,7 @@ import NewsletterForm from '../components/NewsletterForm'
 import Footer from '../components/Footer'
 
 export default function NeoLinksLanding() {
+  const router = useRouter()
   const [theme, setTheme] = useState('light')
   const [activeTab, setActiveTab] = useState(0)
 
@@ -22,6 +24,10 @@ export default function NeoLinksLanding() {
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
+  }
+
+  const handleSendClick = () => {
+    router.push('/send')
   }
 
   const containerVariants = {
@@ -66,7 +72,8 @@ export default function NeoLinksLanding() {
                 The next-gen blockchain protocol for seamless token transfers, social auth gating, and community engagement.
               </p>
               <div className="space-x-4">
-                <button className="px-6 py-3 bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white rounded-full font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                
+                <button onClick={handleSendClick} className="px-6 py-3 bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white rounded-full font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105">
                   Get Started
                 </button>
                 <button className="px-6 py-3 border-2 border-[#00E676] text-[#00E676] rounded-full font-semibold hover:bg-[#00E676] hover:text-white transition-all duration-300 transform hover:scale-105">

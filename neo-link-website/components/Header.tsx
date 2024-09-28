@@ -5,7 +5,6 @@ import NextLink from "next/link";
 import { Navbar } from "./NavBar";
 
 const navItems = [
-  { name: "App", icon: Zap },
   { name: "Send", icon: Zap },
   { name: "Raffle", icon: Zap },
   { name: "Airdrop", icon: Zap },

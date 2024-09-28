@@ -1,6 +1,12 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { encodePacked, hexToBytes, keccak256, toBytes } from "viem";
+import {
+  encodePacked,
+  hexToBytes,
+  keccak256,
+  parseEventLogs,
+  toBytes,
+} from "viem";
 import { privateKeyToAccount, signMessage } from "viem/accounts";
 
 import { nanoid } from "nanoid";
@@ -9,6 +15,9 @@ import {
   NEOLINK_SALT,
   RECIPIENT_WITHDRAWAL_MODE,
 } from "./constants";
+import { config, neoXTestnetT4 } from "./config";
+import { waitForTransactionReceipt } from "@wagmi/core";
+import { neoLinkAbi } from "./smart-contract";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -75,3 +84,40 @@ export async function signWithdrawalMessage(
   });
   return { depositIdx, recipient, signature };
 }
+
+export type ValidChainId = 12227332;
+export const getChain = (chainId: ValidChainId) => {
+  switch (chainId) {
+    case 12227332:
+      return neoXTestnetT4;
+    default:
+      return neoXTestnetT4;
+  }
+};
+
+export const getLinkForNativeToken = async ({
+  address,
+  txHash,
+  url,
+  seed,
+}: {
+  address: string;
+  txHash: string;
+  url: string;
+  seed: string;
+}) => {
+  const receipt = await waitForTransactionReceipt(config, {
+    hash: txHash as `0x${string}`,
+  });
+  console.log({ seed });
+
+  const logs = parseEventLogs({
+    abi: neoLinkAbi,
+    logs: receipt.logs,
+    eventName: "DepositEvent",
+  });
+  const newUrl = new URL(url);
+  newUrl.searchParams.set("i", logs[0].args._index.toString());
+  newUrl.searchParams.set("s", seed);
+  return newUrl.toString();
+};

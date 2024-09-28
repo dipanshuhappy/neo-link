@@ -1,8 +1,8 @@
-"use client";
+'use client'
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
 import {
   Zap,
   Link,
@@ -16,25 +16,27 @@ import {
   Moon,
   Sun,
   ChevronDown,
-} from "lucide-react";
-import { ConnectWalletButton } from "./NavBar";
-import { useAccount, useChainId } from "wagmi";
-import { Case, Default, Else, If, Switch, Then } from "react-if";
+} from "lucide-react"
+import { ConnectWalletButton } from "./NavBar"
+import { useAccount, useChainId } from "wagmi"
+import { Case, Default, Else, If, Switch, Then } from "react-if"
 import {
   generateKeyFromString,
   getChain,
   getLinkForNativeToken,
   getRandomString,
   ValidChainId,
-} from "@/lib/utils";
-import { useWriteNeoLinkMakeCustomDeposit } from "@/lib/smart-contract";
-import { NULL_ADDRESS } from "@/lib/constants";
-import { parse } from "path";
+} from "@/lib/utils"
+import { useWriteNeoLinkMakeCustomDeposit } from "@/lib/smart-contract"
+import { NULL_ADDRESS } from "@/lib/constants"
+import { TailSpin } from "react-loader-spinner"
+import dynamic from 'next/dynamic'
 
-type Token = "NEO" | "GAS" | "ETH" | "USDC";
+const Confetti = dynamic(() => import('react-confetti'), { ssr: false })
 
-type AssetType = "Token" | "NFT" | string;
-export function ListTokens() {}
+type Token = "NEO" | "GAS" | "ETH" | "USDC"
+
+type AssetType = "Token" | "NFT" | string
 
 function SendAmount({
   amount,
@@ -48,20 +50,20 @@ function SendAmount({
   setNftId,
   nftId,
 }: {
-  amount: string;
-  setAmount: React.Dispatch<React.SetStateAction<string>>;
-  selectedAsset: AssetType;
-  setSelectedAsset: React.Dispatch<React.SetStateAction<AssetType>>;
-  tokenAddress: string;
-  setTokenAddress: React.Dispatch<React.SetStateAction<string>>;
-  nftAddress: string;
-  setNftAddress: React.Dispatch<React.SetStateAction<string>>;
-  nftId: string;
-  setNftId: React.Dispatch<React.SetStateAction<string>>;
+  amount: string
+  setAmount: React.Dispatch<React.SetStateAction<string>>
+  selectedAsset: AssetType
+  setSelectedAsset: React.Dispatch<React.SetStateAction<AssetType>>
+  tokenAddress: string
+  setTokenAddress: React.Dispatch<React.SetStateAction<string>>
+  nftAddress: string
+  setNftAddress: React.Dispatch<React.SetStateAction<string>>
+  nftId: string
+  setNftId: React.Dispatch<React.SetStateAction<string>>
 }) {
-  const chainId = useChainId();
+  const chainId = useChainId()
 
-  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol;
+  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol
   return (
     <>
       <div className="mb-6">
@@ -89,195 +91,205 @@ function SendAmount({
           </div>
         </div>
       </div>
-      {
-        <Switch>
-          <Case condition={selectedAsset === "Token"}>
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Token Address
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={tokenAddress}
-                  onChange={(e) => setTokenAddress(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Zap className="h-5 w-5 text-[#00E676]" />
-                </div>
+      <Switch>
+        <Case condition={selectedAsset === "Token"}>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Token Address
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={tokenAddress}
+                onChange={(e) => setTokenAddress(e.target.value)}
+                placeholder="0x..."
+                className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <Zap className="h-5 w-5 text-[#00E676]" />
               </div>
             </div>
-          </Case>
-          <Case condition={selectedAsset === "NFT"}>
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                NFT Address
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={nftAddress}
-                  onChange={(e) => setNftAddress(e.target.value)}
-                  placeholder=""
-                  className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Zap className="h-5 w-5 text-[#00E676]" />
-                </div>
-              </div>
-            </div>
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                NFT Id
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={nftId}
-                  onChange={(e) => setNftId(e.target.value)}
-                  placeholder=""
-                  className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Zap className="h-5 w-5 text-[#00E676]" />
-                </div>
-              </div>
-            </div>
-          </Case>
-          <Default>Enter Native Token Amount</Default>
-        </Switch>
-      }
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Amount
-        </label>
-        <div className="relative">
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-          />
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <Zap className="h-5 w-5 text-[#00E676]" />
-            <Zap className="h-5 w-5 text-[#00E676]" />
           </div>
-        </div>
-      </div>
+        </Case>
+        <Case condition={selectedAsset === "NFT"}>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              NFT Address
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={nftAddress}
+                onChange={(e) => setNftAddress(e.target.value)}
+                placeholder="0x..."
+                className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <Zap className="h-5 w-5 text-[#00E676]" />
+              </div>
+            </div>
+          </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              NFT Id
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={nftId}
+                onChange={(e) => setNftId(e.target.value)}
+                placeholder="1"
+                className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <Zap className="h-5 w-5 text-[#00E676]" />
+              </div>
+            </div>
+          </div>
+        </Case>
+        <Default>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Amount
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <Zap className="h-5 w-5 text-[#00E676]" />
+              </div>
+            </div>
+          </div>
+        </Default>
+      </Switch>
     </>
-  );
+  )
 }
+
 export default function SendPage() {
-  const router = useRouter();
-  const [sendMethod, setSendMethod] = useState<"link" | "direct">("link");
+  const router = useRouter()
+  const [sendMethod, setSendMethod] = useState<"link" | "direct">("link")
   const [recipientType, setRecipientType] = useState<
     "email" | "phone" | "ens" | "wallet"
-  >("email");
-  const [amount, setAmount] = useState("");
-  const [recipient, setRecipient] = useState("");
-  const [reference, setReference] = useState("");
-  const chainId = useChainId();
-  const chain = getChain(chainId as ValidChainId);
-  const [selectedToken, setSelectedToken] = useState<string>("GAS");
-  const [selectedChain, setSelectedChain] = useState<string>(chain.name);
+  >("email")
+  const [amount, setAmount] = useState("")
+  const [recipient, setRecipient] = useState("")
+  const chainId = useChainId()
+  const chain = getChain(chainId as ValidChainId)
 
-  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol;
-  const [selectedAsset, setSelectedAsset] = useState<AssetType>(symbol);
-  const [tokenAddress, setTokeAddress] = useState<string>("");
-  const [nftAddress, setNftAddress] = useState<string>("");
-  const [nftId, setNftId] = useState<string>("");
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const { writeContractAsync: deposit } = useWriteNeoLinkMakeCustomDeposit();
+  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol
+  const [selectedAsset, setSelectedAsset] = useState<AssetType>(symbol)
+  const [tokenAddress, setTokenAddress] = useState<string>("")
+  const [nftAddress, setNftAddress] = useState<string>("")
+  const [nftId, setNftId] = useState<string>("")
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { writeContractAsync: deposit } = useWriteNeoLinkMakeCustomDeposit()
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
+
+  const { address } = useAccount()
 
   useEffect(() => {
     if (isDarkMode) {
-      document.documentElement.classList.add("dark");
+      document.documentElement.classList.add("dark")
     } else {
-      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.remove("dark")
     }
-  }, [isDarkMode]);
+  }, [isDarkMode])
 
   const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log(
-      "Sending",
-      amount,
-      selectedToken,
-      "on",
-      selectedChain,
-      "to",
-      recipient,
-      "via",
-      sendMethod
-    );
-    if (!address) {
-      alert("Please connect your wallet");
-      return;
-    }
+    e.preventDefault()
+    setIsLoading(true)
+    try {
+      console.log(
+        "Sending",
+        amount,
+        selectedAsset,
+        "on",
+        chain.name,
+        "to",
+        recipient,
+        "via",
+        sendMethod
+      )
+      if (!address) {
+        alert("Please connect your wallet")
+        return
+      }
 
-    if (parseFloat(amount) < 0) {
-      alert("Please enter a valid amount");
-      return;
-    }
+      if (parseFloat(amount) < 0) {
+        alert("Please enter a valid amount")
+        return
+      }
 
-    const finalAmount = parseInt(
-      (parseFloat(amount) * 10 ** chain.nativeCurrency.decimals).toString()
-    );
-    const seed = await getRandomString(16);
-    let txHash = "";
+      const finalAmount = parseInt(
+        (parseFloat(amount) * 10 ** chain.nativeCurrency.decimals).toString()
+      )
+      const seed = await getRandomString(16)
+      let txHash = ""
 
-    if (selectedAsset === symbol) {
-      txHash = await deposit({
-        args: [
-          NULL_ADDRESS,
-          0,
-          BigInt(finalAmount),
-          BigInt(0),
-          generateKeyFromString(seed).address,
-          address,
-          false,
-          NULL_ADDRESS,
-          0,
-          false,
-          NULL_ADDRESS,
-        ],
-        value: BigInt(finalAmount),
-      });
+      if (selectedAsset === symbol) {
+        txHash = await deposit({
+          args: [
+            NULL_ADDRESS,
+            0,
+            BigInt(finalAmount),
+            BigInt(0),
+            generateKeyFromString(seed).address,
+            address,
+            false,
+            NULL_ADDRESS,
+            0,
+            false,
+            NULL_ADDRESS,
+          ],
+          value: BigInt(finalAmount),
+        })
+      } else if (selectedAsset === "Token") {
+        alert("Token transfers not yet implemented")
+        return
+      } else if (selectedAsset === "NFT") {
+        alert("NFT transfers not yet implemented")
+        return
+      }
+
+      if (sendMethod === "link") {
+        const url = await getLinkForNativeToken({
+          address: address,
+          txHash: txHash,
+          url: `${window.location.origin}/claim`,
+          seed: seed,
+        })
+        alert(url)
+      }
+
+      setShowConfetti(true)
+      setTimeout(() => setShowConfetti(false), 5000) // Hide confetti after 5 seconds
+    } catch (error) {
+      console.error("Error sending tokens:", error)
+      alert("An error occurred while sending tokens. Please try again.")
+    } finally {
+      setIsLoading(false)
     }
-    if (selectedAsset === "Token") {
-      alert("not yet implemented");
-      return;
-    }
-    if (selectedAsset === "NFT") {
-      alert("not yet implemented");
-      return;
-    }
-    if (sendMethod === "link") {
-      const url = await getLinkForNativeToken({
-        address: address,
-        txHash: txHash,
-        url: `${window.location.origin}/claim`,
-        seed: seed,
-      });
-      alert(url);
-    }
-  };
+  }
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
-  const { address } = useAccount();
+    setIsDarkMode(!isDarkMode)
+  }
 
   const handleBackClick = () => {
-    router.push("/");
-  };
+    router.push("/")
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 p-4">
+      {showConfetti && <Confetti />}
       <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
         <If condition={!!address}>
           <Then>
@@ -343,7 +355,7 @@ export default function SendPage() {
                     selectedAsset={selectedAsset}
                     setNftAddress={setNftAddress}
                     setSelectedAsset={setSelectedAsset}
-                    setTokenAddress={setTokeAddress}
+                    setTokenAddress={setTokenAddress}
                     amount={amount}
                     setAmount={setAmount}
                     nftId={nftId}
@@ -415,7 +427,7 @@ export default function SendPage() {
                         selectedAsset={selectedAsset}
                         setNftAddress={setNftAddress}
                         setSelectedAsset={setSelectedAsset}
-                        setTokenAddress={setTokeAddress}
+                        setTokenAddress={setTokenAddress}
                         amount={amount}
                         setAmount={setAmount}
                         nftId={nftId}
@@ -428,22 +440,32 @@ export default function SendPage() {
 
                 <motion.button
                   type="submit"
-                  className="w-full py-3 px-4 bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                  className="w-full py-3 px-4 bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  disabled={isLoading}
                 >
-                  {sendMethod === "link" ? "Create Link" : "Send Tokens"}
+                  {isLoading ? (
+                    <TailSpin
+                      height="24"
+                      width="24"
+                      color="white"
+                      ariaLabel="loading"
+                    />
+                  ) : (
+                    sendMethod === "link" ? "Create Link" : "Send Tokens"
+                  )}
                 </motion.button>
               </form>
             </div>
           </Then>
+          <Else>
+            <div className="my-6 text-center">
+              <ConnectWalletButton />
+            </div>
+          </Else>
         </If>
-        <Else>
-          <div className="my-6 text-center">
-            <ConnectWalletButton />
-          </div>
-        </Else>
       </div>
     </div>
-  );
+  )
 }

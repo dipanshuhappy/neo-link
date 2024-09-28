@@ -26,6 +26,7 @@ export default function SendPage() {
         false,
         NULL_ADDRESS,
         0,
+        0,
       ],
     });
   };

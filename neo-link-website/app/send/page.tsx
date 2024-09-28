@@ -23,6 +23,9 @@ export default function SendPage() {
         BigInt(0),
         generateKeyFromString(seed).address,
         address,
+        false,
+        NULL_ADDRESS,
+        0,
       ],
     });
   };

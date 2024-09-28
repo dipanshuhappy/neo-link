@@ -1,7 +1,8 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Zap, ChevronDown, Moon, Sun } from "lucide-react"
-import NextLink from "next/link"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Zap, ChevronDown, Moon, Sun } from "lucide-react";
+import NextLink from "next/link";
+import { Navbar } from "./NavBar";
 
 const navItems = [
   { name: "App", icon: Zap },
@@ -9,17 +10,17 @@ const navItems = [
   { name: "Raffle", icon: Zap },
   { name: "Airdrop", icon: Zap },
   { name: "Doc", icon: Zap },
-]
+];
 
 export default function Header({ theme, toggleTheme }) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ type: 'spring', stiffness: 100 }}
+        transition={{ type: "spring", stiffness: 100 }}
         className="px-4 lg:px-6 h-16 flex items-center justify-between border-b bg-white dark:bg-gray-800 sticky top-0 z-50 transition-colors duration-300"
       >
         <NextLink className="flex items-center justify-center" href="#">
@@ -28,7 +29,11 @@ export default function Header({ theme, toggleTheme }) {
         </NextLink>
         <nav className="hidden md:flex gap-10">
           {navItems.map((item, index) => (
-            <NextLink key={index} className="text-m font-medium hover:text-[#00E676] transition-colors flex items-center gap-1" href="#">
+            <NextLink
+              key={index}
+              className="text-m font-medium hover:text-[#00E676] transition-colors flex items-center gap-1"
+              href="#"
+            >
               <item.icon className="h-4 w-4" />
               {item.name}
             </NextLink>
@@ -39,13 +44,19 @@ export default function Header({ theme, toggleTheme }) {
             className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 transition-colors duration-300"
             onClick={toggleTheme}
           >
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {theme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
           </button>
-          <button
-            className="md:hidden"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <Navbar />
+          <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${
+                isOpen ? "rotate-180" : ""
+              }`}
+            />
           </button>
         </div>
       </motion.header>
@@ -57,7 +68,11 @@ export default function Header({ theme, toggleTheme }) {
           className="flex flex-col items-center gap-4 py-4 bg-white dark:bg-gray-800 md:hidden transition-colors duration-300"
         >
           {navItems.map((item, index) => (
-            <NextLink key={index} className="text-sm font-medium hover:text-[#00E676] transition-colors flex items-center gap-1" href="#">
+            <NextLink
+              key={index}
+              className="text-sm font-medium hover:text-[#00E676] transition-colors flex items-center gap-1"
+              href="#"
+            >
               <item.icon className="h-4 w-4" />
               {item.name}
             </NextLink>
@@ -65,5 +80,5 @@ export default function Header({ theme, toggleTheme }) {
         </motion.nav>
       )}
     </>
-  )
+  );
 }

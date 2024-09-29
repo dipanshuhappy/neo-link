@@ -1,80 +1,70 @@
-"use client";
+'use client'
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { waitForTransactionReceipt } from "@wagmi/core";
+import { useState, useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
+import { motion, AnimatePresence } from "framer-motion"
+import { waitForTransactionReceipt } from "@wagmi/core"
 import {
   Zap,
-  Link,
-  Mail,
-  Phone,
-  User,
-  Wallet,
   ArrowLeft,
-  Upload,
-  Plus,
   Moon,
   Sun,
   ChevronDown,
   Copy,
   Check,
-} from "lucide-react";
-import { ConnectWalletButton } from "./NavBar";
-import { useAccount, useChainId, useWriteContract } from "wagmi";
-import { Case, Default, Else, If, Switch, Then } from "react-if";
-import { writeContract, readContract } from "@wagmi/core";
+  Mail,
+  Send,
+  Github,
+  Download,
+} from "lucide-react"
+import { ConnectWalletButton } from "./NavBar"
+import { useAccount, useChainId, useWriteContract } from "wagmi"
+import { Case, Default, Else, If, Switch, Then } from "react-if"
+import { writeContract, readContract } from "@wagmi/core"
 import {
   generateKeyFromString,
   getChain,
   getLinkForNativeToken,
   getRandomString,
   ValidChainId,
-} from "@/lib/utils";
+} from "@/lib/utils"
 import {
   neoLinkAddress,
   useWriteNeoLinkMakeCustomDeposit,
-} from "@/lib/smart-contract";
-import { NULL_ADDRESS } from "@/lib/constants";
-import { TailSpin } from "react-loader-spinner";
-import dynamic from "next/dynamic";
-import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
-import { config } from "@/lib/config";
-import { erc20Abi } from "viem";
-import { hash } from "crypto";
+} from "@/lib/smart-contract"
+import { NULL_ADDRESS } from "@/lib/constants"
+import { TailSpin } from "react-loader-spinner"
+import dynamic from "next/dynamic"
+import { QRCodeSVG } from "qrcode.react"
+import { config } from "@/lib/config"
+import { erc20Abi } from "viem"
 
-const Confetti = dynamic(() => import("react-confetti"), { ssr: false });
+const Confetti = dynamic(() => import("react-confetti"), { ssr: false })
 
-type Token = "NEO" | "GAS" | "ETH" | "USDC";
-
-type AssetType = "Token" | "NFT" | string;
+type AssetType = "Token" | "NFT" | string
 
 function SendAmount({
   amount,
   setAmount,
-  nftAddress,
   selectedAsset,
-  setNftAddress,
   setSelectedAsset,
   setTokenAddress,
   tokenAddress,
-  setNftId,
-  nftId,
+  tokenAmount,
+  setTokenAmount,
 }: {
-  amount: string;
-  setAmount: React.Dispatch<React.SetStateAction<string>>;
-  selectedAsset: AssetType;
-  setSelectedAsset: React.Dispatch<React.SetStateAction<AssetType>>;
-  tokenAddress: string;
-  setTokenAddress: React.Dispatch<React.SetStateAction<string>>;
-  nftAddress: string;
-  setNftAddress: React.Dispatch<React.SetStateAction<string>>;
-  nftId: string;
-  setNftId: React.Dispatch<React.SetStateAction<string>>;
+  amount: string
+  setAmount: React.Dispatch<React.SetStateAction<string>>
+  selectedAsset: AssetType
+  setSelectedAsset: React.Dispatch<React.SetStateAction<AssetType>>
+  tokenAddress: string
+  setTokenAddress: React.Dispatch<React.SetStateAction<string>>
+  tokenAmount: string
+  setTokenAmount: React.Dispatch<React.SetStateAction<string>>
 }) {
-  const chainId = useChainId();
+  const chainId = useChainId()
 
-  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol;
+  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol
   return (
     <>
       <div className="mb-6">
@@ -121,35 +111,16 @@ function SendAmount({
               </div>
             </div>
           </div>
-        </Case>
-        <Case condition={selectedAsset === "NFT"}>
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              NFT Address
+              Number of Tokens
             </label>
             <div className="relative">
               <input
-                type="text"
-                value={nftAddress}
-                onChange={(e) => setNftAddress(e.target.value)}
-                placeholder="0x..."
-                className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <Zap className="h-5 w-5 text-[#00E676]" />
-              </div>
-            </div>
-          </div>
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              NFT Id
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={nftId}
-                onChange={(e) => setNftId(e.target.value)}
-                placeholder="1"
+                type="number"
+                value={tokenAmount}
+                onChange={(e) => setTokenAmount(e.target.value)}
+                placeholder="0"
                 className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -179,89 +150,80 @@ function SendAmount({
         </Default>
       </Switch>
     </>
-  );
+  )
 }
 
 export default function SendPage() {
-  const router = useRouter();
-  const [sendMethod, setSendMethod] = useState<"link" | "direct">("link");
-  const [recipientType, setRecipientType] = useState<
-    "email" | "phone" | "ens" | "wallet"
-  >("email");
-  const [amount, setAmount] = useState("");
-  const [recipient, setRecipient] = useState("");
-  const chainId = useChainId();
-  const chain = getChain(chainId as ValidChainId);
+  const router = useRouter()
+  const [amount, setAmount] = useState("")
+  const [tokenAmount, setTokenAmount] = useState("")
+  const chainId = useChainId()
+  const chain = getChain(chainId as ValidChainId)
 
-  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol;
-  const [selectedAsset, setSelectedAsset] = useState<AssetType>(symbol);
-  const [tokenAddress, setTokenAddress] = useState<string>("");
-  const [nftAddress, setNftAddress] = useState<string>("");
-  const [nftId, setNftId] = useState<string>("");
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const { writeContractAsync: deposit } = useWriteNeoLinkMakeCustomDeposit();
+  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol
+  const [selectedAsset, setSelectedAsset] = useState<AssetType>(symbol)
+  const [tokenAddress, setTokenAddress] = useState<string>("")
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { writeContractAsync: deposit } = useWriteNeoLinkMakeCustomDeposit()
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
-  const [isCopied, setIsCopied] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null)
+  const [isCopied, setIsCopied] = useState(false)
+  const [showAlert, setShowAlert] = useState(false)
 
-  const { writeContractAsync } = useWriteContract();
+  const { writeContractAsync } = useWriteContract()
 
-  const { address } = useAccount();
+  const { address } = useAccount()
+  const qrRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
+    const savedTheme = localStorage.getItem("theme")
     if (savedTheme === "dark") {
-      setIsDarkMode(true);
-      document.documentElement.classList.add("dark");
+      setIsDarkMode(true)
+      document.documentElement.classList.add("dark")
     } else {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove("dark");
+      setIsDarkMode(false)
+      document.documentElement.classList.remove("dark")
     }
-  }, []);
+  }, [])
 
   const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+    e.preventDefault()
+    setIsLoading(true)
     try {
       console.log(
         "Sending",
-        amount,
+        selectedAsset === "Token" ? tokenAmount : amount,
         selectedAsset,
         "on",
-        chain.name,
-        "to",
-        recipient,
-        "via",
-        sendMethod
-      );
+        chain.name
+      )
       if (!address) {
-        throw new Error("Please connect your wallet");
+        throw new Error("Please connect your wallet")
       }
 
-      if (parseFloat(amount) < 0) {
-        throw new Error("Please enter a valid amount");
+      if (selectedAsset === "Token" && (parseFloat(tokenAmount) <= 0 || !tokenAddress)) {
+        throw new Error("Please enter a valid token amount and address")
+      } else if (selectedAsset !== "Token" && parseFloat(amount) <= 0) {
+        throw new Error("Please enter a valid amount")
       }
 
-      let finalAmount = parseInt(
-        (parseFloat(amount) * 10 ** chain.nativeCurrency.decimals).toString()
-      );
+      let finalAmount: bigint
       const vaultAddress =
-        neoLinkAddress[chainId as keyof typeof neoLinkAddress];
-      const seed = await getRandomString(16);
-      let txHash = "";
+        neoLinkAddress[chainId as keyof typeof neoLinkAddress]
+      const seed = await getRandomString(16)
+      let txHash = ""
       if (!vaultAddress) {
-        throw new Error("Vault address not found");
-        return;
+        throw new Error("Vault address not found")
       }
       if (selectedAsset === symbol) {
+        finalAmount = BigInt(parseFloat(amount) * 10 ** chain.nativeCurrency.decimals)
         txHash = await deposit({
           args: [
             NULL_ADDRESS,
             0,
-            BigInt(finalAmount),
+            finalAmount,
             BigInt(0),
             generateKeyFromString(seed).address,
             address,
@@ -271,34 +233,32 @@ export default function SendPage() {
             false,
             NULL_ADDRESS,
           ],
-          value: BigInt(finalAmount),
-        });
+          value: finalAmount,
+        })
       } else if (selectedAsset === "Token") {
         let decimals = await readContract(config, {
           abi: erc20Abi,
           functionName: "decimals",
           address: tokenAddress as `0x${string}`,
-        });
-        finalAmount = parseInt(
-          (parseFloat(amount) * 10 ** decimals).toString()
-        );
+        })
+        finalAmount = BigInt(parseFloat(tokenAmount) * 10 ** decimals)
 
         const approveTx = await writeContractAsync({
           abi: erc20Abi,
           address: tokenAddress as `0x${string}`,
           functionName: "approve",
-          args: [vaultAddress, BigInt(finalAmount)],
-        });
+          args: [vaultAddress, finalAmount],
+        })
 
-        const approveReceipt = await waitForTransactionReceipt(config, {
+        await waitForTransactionReceipt(config, {
           hash: approveTx,
-        });
+        })
 
         txHash = await deposit({
           args: [
             tokenAddress as `0x${string}`,
             1,
-            BigInt(finalAmount),
+            finalAmount,
             BigInt(0),
             generateKeyFromString(seed).address,
             address,
@@ -308,56 +268,86 @@ export default function SendPage() {
             false,
             NULL_ADDRESS,
           ],
-        });
-      } else if (selectedAsset === "NFT") {
-        throw new Error("NFT transfers not yet implemented");
+        })
       }
 
-      if (sendMethod === "link") {
-        const url = await getLinkForNativeToken({
-          address: address,
-          txHash: txHash,
-          url: `${window.location.origin}/claim`,
-          seed: seed,
-          chainId: chainId.toString(),
-        });
-        setGeneratedLink(url);
-      }
+      const url = await getLinkForNativeToken({
+        address: address,
+        txHash: txHash,
+        url: `${window.location.origin}/claim`,
+        seed: seed,
+        chainId: chainId.toString(),
+      })
+      setGeneratedLink(url)
 
-      setShowConfetti(true);
-      setShowAlert(true);
-      setTimeout(() => setShowConfetti(false), 5000); // Hide confetti after 5 seconds
+      setShowConfetti(true)
+      setShowAlert(true)
+      setTimeout(() => setShowConfetti(false), 5000) // Hide confetti after 5 seconds
     } catch (error: any) {
-      console.error("Error sending tokens:", error);
-      setShowAlert(true);
-      setGeneratedLink(null);
+      console.error("Error sending tokens:", error)
+      setShowAlert(true)
+      setGeneratedLink(null)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode;
-    setIsDarkMode(newDarkMode);
-    localStorage.setItem("theme", newDarkMode ? "dark" : "light");
+    const newDarkMode = !isDarkMode
+    setIsDarkMode(newDarkMode)
+    localStorage.setItem("theme", newDarkMode ? "dark" : "light")
     if (newDarkMode) {
-      document.documentElement.classList.add("dark");
+      document.documentElement.classList.add("dark")
     } else {
-      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.remove("dark")
     }
-  };
+  }
 
   const handleBackClick = () => {
-    router.push("/");
-  };
+    router.push("/")
+  }
 
   const copyToClipboard = () => {
     if (generatedLink) {
-      navigator.clipboard.writeText(generatedLink);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
+      navigator.clipboard.writeText(generatedLink)
+      setIsCopied(true)
+      setTimeout(() => setIsCopied(false), 2000)
     }
-  };
+  }
+
+  const shareViaEmail = () => {
+    const subject = encodeURIComponent("Claim your tokens")
+    const body = encodeURIComponent(`Here's your link to claim tokens: ${generatedLink}`)
+    window.open(`mailto:?subject=${subject}&body=${body}`)
+  }
+
+  const shareViaTelegram = () => {
+    const text = encodeURIComponent(`Here's your link to claim tokens: ${generatedLink}`)
+    window.open(`https://t.me/share/url?url=${text}`)
+  }
+
+  const shareViaWhatsApp = () => {
+    const text = encodeURIComponent(`Here's your link to claim tokens: ${generatedLink}`)
+    window.open(`https://wa.me/?text=${text}`)
+  }
+
+  const shareViaGitHub = () => {
+    const text = encodeURIComponent(`Here's your link to claim tokens: ${generatedLink}`)
+    window.open(`https://github.com/login?return_to=${encodeURIComponent(`https://github.com/share?text=${text}`)}`)
+  }
+
+  const downloadQR = () => {
+    if (qrRef.current) {
+      const canvas = qrRef.current.querySelector("canvas")
+      if (canvas) {
+        const image = canvas.toDataURL("image/png")
+        const link = document.createElement("a")
+        link.href = image
+        link.download = "qr-code.png"
+        link.click()
+      }
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 p-4">
@@ -394,121 +384,20 @@ export default function SendPage() {
                 </button>
               </div>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Transfer tokens via link or to an email, phone number, ENS, or
-                wallet address.
+                Transfer tokens via a generated link.
               </p>
-              <div className="flex mb-6">
-                <button
-                  className={`flex-1 py-2 px-4 rounded-l-lg font-medium transition-colors duration-300 ${
-                    sendMethod === "link"
-                      ? "bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                  }`}
-                  onClick={() => setSendMethod("link")}
-                >
-                  Send via link
-                </button>
-                <button
-                  className={`flex-1 py-2 px-4 rounded-r-lg font-medium transition-colors duration-300 ${
-                    sendMethod === "direct"
-                      ? "bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                  }`}
-                  onClick={() => setSendMethod("direct")}
-                >
-                  Send directly
-                </button>
-              </div>
 
               <form onSubmit={handleSend}>
-                {sendMethod === "link" ? (
-                  <SendAmount
-                    nftAddress={nftAddress}
-                    selectedAsset={selectedAsset}
-                    setNftAddress={setNftAddress}
-                    setSelectedAsset={setSelectedAsset}
-                    setTokenAddress={setTokenAddress}
-                    amount={amount}
-                    setAmount={setAmount}
-                    nftId={nftId}
-                    setNftId={setNftId}
-                    tokenAddress={tokenAddress}
-                  />
-                ) : (
-                  <>
-                    <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        To:
-                      </label>
-                      <div className="flex mb-2">
-                        <button
-                          type="button"
-                          onClick={() => setRecipientType("email")}
-                          className={`flex-1 py-2 px-3 text-xs font-medium rounded-l-lg transition-colors duration-300 ${
-                            recipientType === "email"
-                              ? "bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white"
-                              : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                          }`}
-                        >
-                          <Mail className="h-4 w-4 mx-auto" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setRecipientType("phone")}
-                          className={`flex-1 py-2 px-3 text-xs font-medium transition-colors duration-300 ${
-                            recipientType === "phone"
-                              ? "bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white"
-                              : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                          }`}
-                        >
-                          <Phone className="h-4 w-4 mx-auto" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setRecipientType("ens")}
-                          className={`flex-1 py-2 px-3 text-xs font-medium transition-colors duration-300 ${
-                            recipientType === "ens"
-                              ? "bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white"
-                              : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                          }`}
-                        >
-                          <User className="h-4 w-4 mx-auto" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setRecipientType("wallet")}
-                          className={`flex-1 py-2 px-3 text-xs font-medium rounded-r-lg transition-colors duration-300 ${
-                            recipientType === "wallet"
-                              ? "bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white"
-                              : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
-                          }`}
-                        >
-                          <Wallet className="h-4 w-4 mx-auto" />
-                        </button>
-                      </div>
-                      <input
-                        type="text"
-                        value={recipient}
-                        onChange={(e) => setRecipient(e.target.value)}
-                        placeholder={`Enter ${recipientType}`}
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      />
-
-                      <SendAmount
-                        nftAddress={nftAddress}
-                        selectedAsset={selectedAsset}
-                        setNftAddress={setNftAddress}
-                        setSelectedAsset={setSelectedAsset}
-                        setTokenAddress={setTokenAddress}
-                        amount={amount}
-                        setAmount={setAmount}
-                        nftId={nftId}
-                        setNftId={setNftId}
-                        tokenAddress={tokenAddress}
-                      />
-                    </div>
-                  </>
-                )}
+                <SendAmount
+                  selectedAsset={selectedAsset}
+                  setSelectedAsset={setSelectedAsset}
+                  setTokenAddress={setTokenAddress}
+                  amount={amount}
+                  setAmount={setAmount}
+                  tokenAddress={tokenAddress}
+                  tokenAmount={tokenAmount}
+                  setTokenAmount={setTokenAmount}
+                />
 
                 <motion.button
                   type="submit"
@@ -524,10 +413,8 @@ export default function SendPage() {
                       color="white"
                       ariaLabel="loading"
                     />
-                  ) : sendMethod === "link" ? (
-                    "Create Link"
                   ) : (
-                    "Send Tokens"
+                    "Create Link"
                   )}
                 </motion.button>
               </form>
@@ -566,12 +453,46 @@ export default function SendPage() {
                             )}
                           </button>
                         </div>
-                        <div className="flex justify-center mb-4">
-                          <QRCodeCanvas value={generatedLink} />
+                        <div className="flex justify-center mb-4" ref={qrRef}>
+                          <QRCodeSVG value={generatedLink} size={128} />
                         </div>
-                        <p className="text-sm text-green-700 dark:text-green-300 text-center">
-                          Scan this QR code to open the link
-                        </p>
+                        <div className="flex justify-center space-x-4 mb-4">
+                          <button
+                            onClick={shareViaEmail}
+                            className="p-2 bg-[#00E676] rounded-full text-white hover:bg-[#00BFA5] transition-colors duration-300"
+                            aria-label="Share via Email"
+                          >
+                            <Mail className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={shareViaTelegram}
+                            className="p-2 bg-[#00E676] rounded-full text-white hover:bg-[#00BFA5] transition-colors duration-300"
+                            aria-label="Share via Telegram"
+                          >
+                            <Send className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={shareViaWhatsApp}
+                            className="p-2 bg-[#00E676] rounded-full text-white hover:bg-[#00BFA5] transition-colors duration-300"
+                            aria-label="Share via WhatsApp"
+                          >
+                            <Send className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={shareViaGitHub}
+                            className="p-2 bg-[#00E676] rounded-full text-white hover:bg-[#00BFA5] transition-colors duration-300"
+                            aria-label="Share via GitHub"
+                          >
+                            <Github className="h-5 w-5" />
+                          </button>
+                        </div>
+                        <button
+                          onClick={downloadQR}
+                          className="w-full py-2 px-4 bg-[#00E676] text-white rounded-lg font-semibold hover:bg-[#00BFA5] transition-colors duration-300 flex items-center justify-center"
+                        >
+                          <Download className="h-5 w-5 mr-2" />
+                          Download QR Code
+                        </button>
                       </>
                     ) : (
                       <p className="text-sm text-red-700 dark:text-red-300 mb-2">
@@ -598,5 +519,5 @@ export default function SendPage() {
         </If>
       </div>
     </div>
-  );
+  )
 }

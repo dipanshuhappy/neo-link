@@ -1,267 +1,199 @@
-'use client'
+"use client";
 
-import { useState, useRef } from 'react'
-import { motion } from 'framer-motion'
-import { useRouter } from 'next/navigation'
-import { ArrowLeft, Moon, Sun, Upload, Trash, Copy, ExternalLink, Send } from "lucide-react"
-import { v4 as uuidv4 } from 'uuid'
-import Papa from 'papaparse'
+import { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Upload, Plus, Trash } from "lucide-react";
+import Papa from "papaparse";
 
-type AirdropLink = {
-  id: string
-  email: string
-  amount: string
-  token: string
-  chain: string
-  url: string
-}
+type Recipient = {
+  amount: string;
+  username: string;
+};
 
-type Chain = 'Neo' | 'Ethereum'
-type Token = 'NEO' | 'GAS' | 'ETH' | 'USDC'
-
-export default function AirdropPage() {
-  const router = useRouter()
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const [links, setLinks] = useState<AirdropLink[]>([])
-  const [amount, setAmount] = useState('')
-  const [selectedToken, setSelectedToken] = useState<Token>('NEO')
-  const [selectedChain, setSelectedChain] = useState<Chain>('Neo')
-  const [numUsers, setNumUsers] = useState('')
-  const [emails, setEmails] = useState<string[]>([])
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode)
-    if (isDarkMode) {
-      document.documentElement.classList.remove('dark')
-    } else {
-      document.documentElement.classList.add('dark')
-    }
-  }
-
-  const handleBackClick = () => {
-    router.push('/')
-  }
+export default function Component() {
+  const [assetType, setAssetType] = useState<"GAS" | "Token">("GAS");
+  const [tokenAddress, setTokenAddress] = useState("");
+  const [recipients, setRecipients] = useState<Recipient[]>([]);
+  const [newAmount, setNewAmount] = useState("");
+  const [newUsername, setNewUsername] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const file = event.target.files?.[0];
     if (file) {
       Papa.parse(file, {
         complete: (results) => {
-          const parsedEmails = results.data.flat().filter(email => email && typeof email === 'string' && email.includes('@'))
-          setEmails(parsedEmails)
-          setNumUsers(parsedEmails.length.toString())
-        }
-      })
+          const parsedRecipients = results.data
+            .slice(1)
+            .map((row: any) => ({
+              amount: row[0],
+              username: row[1],
+            }))
+            .filter(
+              (recipient: Recipient) => recipient.amount && recipient.username
+            );
+          setRecipients([...recipients, ...parsedRecipients]);
+        },
+        header: true,
+      });
     }
-  }
+  };
 
-  const generateLinks = () => {
-    if (amount && selectedToken && selectedChain && (parseInt(numUsers) > 0 || emails.length > 0)) {
-      const newLinks: AirdropLink[] = (emails.length > 0 ? emails : Array(parseInt(numUsers)).fill('')).map(email => ({
-        id: uuidv4(),
-        email,
-        amount,
-        token: selectedToken,
-        chain: selectedChain,
-        url: `https://neolinks.com/claim/${uuidv4()}`
-      }))
-      setLinks(newLinks)
+  const addRecipient = () => {
+    if (newAmount && newUsername) {
+      setRecipients([
+        ...recipients,
+        { amount: newAmount, username: newUsername },
+      ]);
+      setNewAmount("");
+      setNewUsername("");
     }
-  }
+  };
 
-  const removeLink = (id: string) => {
-    setLinks(links.filter(link => link.id !== id))
-  }
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-  }
-
-  const sendLinks = () => {
-    // Here you would implement the logic to send the links to the respective emails
-    console.log('Sending links to emails:', links)
-  }
+  const removeRecipient = (index: number) => {
+    const updatedRecipients = recipients.filter((_, i) => i !== index);
+    setRecipients(updatedRecipients);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 p-4">
-      <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <button
-                onClick={handleBackClick}
-                className="mr-2 text-gray-600 dark:text-gray-300 hover:text-[#00E676] transition-colors duration-300"
-                aria-label="Go back to home page"
-              >
-                <ArrowLeft className="h-6 w-6" />
-              </button>
-              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00E676] via-[#1DE9B6] to-[#00BFA5]">
-                Create Airdrop
-              </h1>
-            </div>
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300"
-              aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
-            >
-              {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </button>
-          </div>
-          
-          <div className="mb-6">
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Create airdrop links to distribute tokens to your users. You can specify the number of users or import a CSV file with email addresses.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Amount per User
-                </label>
-                <input
-                  type="number"
-                  id="amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full px-3 py-2 rounded-md border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                />
-              </div>
-              <div>
-                <label htmlFor="token" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Token
-                </label>
-                <select
-                  id="token"
-                  value={selectedToken}
-                  onChange={(e) => setSelectedToken(e.target.value as Token)}
-                  className="w-full px-3 py-2 rounded-md border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                >
-                  <option value="NEO">NEO</option>
-                  <option value="GAS">GAS</option>
-                  <option value="ETH">ETH</option>
-                  <option value="USDC">USDC</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="chain" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Chain
-                </label>
-                <select
-                  id="chain"
-                  value={selectedChain}
-                  onChange={(e) => setSelectedChain(e.target.value as Chain)}
-                  className="w-full px-3 py-2 rounded-md border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                >
-                  <option value="Neo">Neo</option>
-                  <option value="Ethereum">Ethereum</option>
-                </select>
-              </div>
-            </div>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="numUsers" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Number of Users
-                </label>
-                <input
-                  type="number"
-                  id="numUsers"
-                  value={numUsers}
-                  onChange={(e) => setNumUsers(e.target.value)}
-                  placeholder="Enter number of users"
-                  className="w-full px-3 py-2 rounded-md border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                />
-              </div>
-              <div>
-                <label htmlFor="csvUpload" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Import User Emails (CSV)
-                </label>
-                <input
-                  type="file"
-                  id="csvUpload"
-                  accept=".csv"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full px-3 py-2 rounded-md border-2 border-[#00E676] bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-300 flex items-center justify-center"
-                >
-                  <Upload className="h-5 w-5 mr-2" />
-                  Upload CSV
-                </button>
-              </div>
-            </div>
-            <motion.button
-              onClick={generateLinks}
-              className="mt-4 w-full py-2 px-4 bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Generate Links and Send
-            </motion.button>
-          </div>
+    <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg text-gray-600 dark:text-gray-300">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">
+        Airdrop Configuration
+      </h2>
 
-          {links.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Generated Airdrop Links</h2>
-              <div className="max-h-60 overflow-y-auto">
-                {links.map((link) => (
-                  <motion.div
-                    key={link.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg flex items-center justify-between mb-2"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                        {link.email || 'Anonymous User'} - {link.amount} {link.token} on {link.chain}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{link.url}</p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => copyToClipboard(link.url)}
-                        className="p-2 bg-gray-200 dark:bg-gray-600 rounded-full hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-300"
-                        aria-label="Copy link"
-                      >
-                        <Copy className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                      </button>
-                      <button
-                        onClick={() => removeLink(link.id)}
-                        className="p-2 bg-gray-200 dark:bg-gray-600 rounded-full hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-300"
-                        aria-label="Remove link"
-                      >
-                        <Trash className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                      </button>
-                      <a
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 bg-gray-200 dark:bg-gray-600 rounded-full hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors duration-300"
-                        aria-label="Open link"
-                      >
-                        <ExternalLink className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                      </a>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-              <motion.button
-                onClick={sendLinks}
-                className="mt-4 w-full py-2 px-4 bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Send className="h-5 w-5 mr-2" />
-                Send Links to Emails
-              </motion.button>
-            </div>
-          )}
+      <div className="mb-6">
+        <Label htmlFor="assetType" className="text-gray-700 dark:text-gray-200">
+          Asset Type
+        </Label>
+        <div className="flex mt-2 space-x-4">
+          <Button
+            onClick={() => setAssetType("GAS")}
+            variant={assetType === "GAS" ? "default" : "outline"}
+            className={`${assetType === "GAS" ? "bg-[#00E676] hover:bg-[#00C853] text-white" : "text-gray-600 dark:text-gray-300 hover:text-[#00E676] hover:border-[#00E676]"} transition-colors duration-300`}
+          >
+            GAS
+          </Button>
+          <Button
+            onClick={() => setAssetType("Token")}
+            variant={assetType === "Token" ? "default" : "outline"}
+            className={`${assetType === "Token" ? "bg-[#00E676] hover:bg-[#00C853] text-white" : "text-gray-600 dark:text-gray-300 hover:text-[#00E676] hover:border-[#00E676]"} transition-colors duration-300`}
+          >
+            Token
+          </Button>
         </div>
       </div>
+
+      {assetType === "Token" && (
+        <div className="mb-6">
+          <Label
+            htmlFor="tokenAddress"
+            className="text-gray-700 dark:text-gray-200"
+          >
+            Token Address
+          </Label>
+          <Input
+            id="tokenAddress"
+            value={tokenAddress}
+            onChange={(e) => setTokenAddress(e.target.value)}
+            placeholder="Enter token address"
+            className="mt-2 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-[#00E676] focus:ring-[#00E676] text-gray-800 dark:text-gray-200"
+          />
+        </div>
+      )}
+
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-2 text-gray-700 dark:text-gray-200">
+          Recipients
+        </h3>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-gray-700 dark:text-gray-200">
+                Amount
+              </TableHead>
+              <TableHead className="text-gray-700 dark:text-gray-200">
+                Twitter Username
+              </TableHead>
+              <TableHead className="text-gray-700 dark:text-gray-200">
+                Action
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {recipients.map((recipient, index) => (
+              <TableRow key={index}>
+                <TableCell>{recipient.amount}</TableCell>
+                <TableCell>{recipient.username}</TableCell>
+                <TableCell>
+                  <Button
+                    onClick={() => removeRecipient(index)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-600 dark:text-gray-300 hover:text-[#00E676] transition-colors duration-300"
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="mt-6 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+        <Input
+          type="file"
+          accept=".csv"
+          ref={fileInputRef}
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+
+        <Input
+          value={newAmount}
+          onChange={(e) => setNewAmount(e.target.value)}
+          placeholder="Amount"
+          className="w-full sm:w-auto bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-[#00E676] focus:ring-[#00E676] text-gray-800 dark:text-gray-200"
+        />
+        <Input
+          value={newUsername}
+          onChange={(e) => setNewUsername(e.target.value)}
+          placeholder="Twitter Username"
+          className="w-full sm:w-auto bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-[#00E676] focus:ring-[#00E676] text-gray-800 dark:text-gray-200"
+        />
+        <Button
+          onClick={addRecipient}
+          className="w-full sm:w-auto flex items-center justify-center bg-[#00E676] hover:bg-[#00C853] text-white transition-colors duration-300"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add
+        </Button>
+      </div>
+      <Button
+        onClick={() => fileInputRef.current?.click()}
+        variant="outline"
+        className="w-full my-4 mx-auto sm:w-auto flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-[#00E676] hover:border-[#00E676] transition-colors duration-300"
+      >
+        <Upload className="h-4 w-4  " />
+        Upload CSV
+      </Button>
+
+      <Button
+        variant="outline"
+        className="w-full my-4 mx-auto sm:w-auto flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-[#00E676] hover:border-[#00E676] transition-colors duration-300"
+      >
+        Generate Guarded Airdrop
+      </Button>
     </div>
-  )
+  );
 }

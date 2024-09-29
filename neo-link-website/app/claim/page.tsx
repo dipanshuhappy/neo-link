@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Moon, Sun, Gift, Check } from "lucide-react";
@@ -22,7 +22,7 @@ import dynamic from "next/dynamic";
 
 const Confetti = dynamic(() => import("react-confetti"), { ssr: false });
 
-export default function EnhancedClaimPage() {
+function EnhancedClaimPage() {
   const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isGaslessClaim, setIsGaslessClaim] = useState(true);
@@ -258,5 +258,13 @@ export default function EnhancedClaimPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ClaimPage() {
+  return (
+    <Suspense>
+      <EnhancedClaimPage />
+    </Suspense>
   );
 }

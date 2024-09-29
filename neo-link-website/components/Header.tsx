@@ -8,7 +8,7 @@ const navItems = [
   { name: "Send", icon: Zap, href: "/send", external: false },
   { name: "Raffle", icon: Zap, href: "/raffle", external: false },
   { name: "Airdrop", icon: Zap, href: "/airdrop", external: false },
-  { name: "Doc", icon: Zap, href: "/doc", external: false },  // External link
+  { name: "Doc", icon: Zap, href: "/doc", external: false }, // External link
 ];
 
 export default function Header({ theme, toggleTheme }) {
@@ -33,7 +33,7 @@ export default function Header({ theme, toggleTheme }) {
               className="text-m font-medium hover:text-[#00E676] transition-colors flex items-center gap-1"
               href={item.href || "/"}
               // target="_blank"  // Open external link in a new tab
-              rel="noopener noreferrer"  // Security best practice when opening in new tab 
+              rel="noopener noreferrer" // Security best practice when opening in new tab
             >
               <item.icon className="h-4 w-4" />
               {item.name}
@@ -50,7 +50,7 @@ export default function Header({ theme, toggleTheme }) {
             ) : (
               <Moon className="h-4 w-4" />
             )}
-          </button> 
+          </button>
           <ConnectWalletButton />
           <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
             <ChevronDown

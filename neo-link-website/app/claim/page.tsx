@@ -11,12 +11,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { encodeFunctionData } from "viem";
-import { generateKeyFromString, signWithdrawalMessage } from "@/lib/utils";
+import {
+  generateKeyFromString,
+  isAmountWithdrawEmpty,
+  signWithdrawalMessage,
+} from "@/lib/utils";
 import { neoLinkAbi, neoLinkAddress } from "@/lib/smart-contract";
 import { TailSpin } from "react-loader-spinner";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
-const Confetti = dynamic(() => import('react-confetti'), { ssr: false });
+const Confetti = dynamic(() => import("react-confetti"), { ssr: false });
 
 export default function EnhancedClaimPage() {
   const router = useRouter();
@@ -29,8 +33,8 @@ export default function EnhancedClaimPage() {
   const [alertMessage, setAlertMessage] = useState("");
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
       setIsDarkMode(true);
       document.documentElement.classList.add("dark");
     } else {
@@ -98,10 +102,18 @@ export default function EnhancedClaimPage() {
       }
 
       const res = await response.json();
-      setAlertMessage(`Transaction sent: ${res.hash}`);
-      setShowAlert(true);
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 5000); // Hide confetti after 5 seconds
+      const isEmpty = await isAmountWithdrawEmpty({
+        txHash: res.hash,
+      });
+      if (!isEmpty) {
+        setAlertMessage(`Transaction sent: ${res.hash}`);
+        setShowAlert(true);
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 5000); // Hide confetti after 5 seconds
+      } else {
+        setAlertMessage(`This lottery link was empty , better luck next time`);
+        setShowAlert(true);
+      }
     } catch (err: any) {
       console.error("Error in claim:", err);
       setAlertMessage(err.message || "An error occurred while claiming assets");
@@ -114,7 +126,7 @@ export default function EnhancedClaimPage() {
   const toggleDarkMode = () => {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
-    localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
+    localStorage.setItem("theme", newDarkMode ? "dark" : "light");
     if (newDarkMode) {
       document.documentElement.classList.add("dark");
     } else {
@@ -185,7 +197,9 @@ export default function EnhancedClaimPage() {
               <Checkbox
                 id="gaslessClaim"
                 checked={isGaslessClaim}
-                onCheckedChange={(checked) => setIsGaslessClaim(checked as boolean)}
+                onCheckedChange={(checked) =>
+                  setIsGaslessClaim(checked as boolean)
+                }
               />
               <Label
                 htmlFor="gaslessClaim"
@@ -226,7 +240,9 @@ export default function EnhancedClaimPage() {
                 className="mt-6 p-4 bg-green-100 dark:bg-green-800 rounded-lg"
               >
                 <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
-                  {alertMessage.startsWith("Transaction sent") ? "Claim Successful!" : "Claim Failed"}
+                  {alertMessage.startsWith("Transaction sent")
+                    ? "Claim Successful!"
+                    : "Claim Failed"}
                 </h3>
                 <p className="text-sm text-green-700 dark:text-green-300">
                   {alertMessage}

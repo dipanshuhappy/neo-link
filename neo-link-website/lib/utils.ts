@@ -128,6 +128,18 @@ export const getLinksForRaffles = async ({
   }
   return finalUrls;
 };
+
+export const isAmountWithdrawEmpty = async ({ txHash }: { txHash: string }) => {
+  const receipt = await waitForTransactionReceipt(config, {
+    hash: txHash as `0x${string}`,
+  });
+  const logs = parseEventLogs({
+    abi: neoLinkAbi,
+    logs: receipt.logs,
+    eventName: "WithdrawEvent",
+  });
+  return parseInt(logs[0].args._amount.toString()) === 0;
+};
 export const getLinkForNativeToken = async ({
   address,
   txHash,

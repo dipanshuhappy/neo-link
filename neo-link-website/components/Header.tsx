@@ -8,7 +8,7 @@ const navItems = [
   { name: "Send", icon: Zap, href: "/send", external: false },
   { name: "Raffle", icon: Zap, href: "/raffle", external: false },
   { name: "Airdrop", icon: Zap, href: "/airdrop", external: false },
-  { name: "Doc", icon: Zap, href: "https://example.com", external: true },  // External link
+  { name: "Doc", icon: Zap, href: "/doc", external: false },  // External link
 ];
 
 export default function Header({ theme, toggleTheme }) {

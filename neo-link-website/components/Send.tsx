@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   Zap,
   Link,
@@ -16,6 +16,8 @@ import {
   Moon,
   Sun,
   ChevronDown,
+  Copy,
+  Check,
 } from "lucide-react"
 import { ConnectWalletButton } from "./NavBar"
 import { useAccount, useChainId } from "wagmi"
@@ -31,6 +33,7 @@ import { useWriteNeoLinkMakeCustomDeposit } from "@/lib/smart-contract"
 import { NULL_ADDRESS } from "@/lib/constants"
 import { TailSpin } from "react-loader-spinner"
 import dynamic from 'next/dynamic'
+import {QRCodeSVG, QRCodeCanvas} from 'qrcode.react'
 
 const Confetti = dynamic(() => import('react-confetti'), { ssr: false })
 
@@ -192,16 +195,22 @@ export default function SendPage() {
 
   const [isLoading, setIsLoading] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null)
+  const [isCopied, setIsCopied] = useState(false)
+  const [showAlert, setShowAlert] = useState(false)
 
   const { address } = useAccount()
 
   useEffect(() => {
-    if (isDarkMode) {
+    const savedTheme = localStorage.getItem('theme')
+    if (savedTheme === 'dark') {
+      setIsDarkMode(true)
       document.documentElement.classList.add("dark")
     } else {
+      setIsDarkMode(false)
       document.documentElement.classList.remove("dark")
     }
-  }, [isDarkMode])
+  }, [])
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -219,13 +228,11 @@ export default function SendPage() {
         sendMethod
       )
       if (!address) {
-        alert("Please connect your wallet")
-        return
+        throw new Error("Please connect your wallet")
       }
 
       if (parseFloat(amount) < 0) {
-        alert("Please enter a valid amount")
-        return
+        throw new Error("Please enter a valid amount")
       }
 
       const finalAmount = parseInt(
@@ -252,11 +259,9 @@ export default function SendPage() {
           value: BigInt(finalAmount),
         })
       } else if (selectedAsset === "Token") {
-        alert("Token transfers not yet implemented")
-        return
+        throw new Error("Token transfers not yet implemented")
       } else if (selectedAsset === "NFT") {
-        alert("NFT transfers not yet implemented")
-        return
+        throw new Error("NFT transfers not yet implemented")
       }
 
       if (sendMethod === "link") {
@@ -265,38 +270,45 @@ export default function SendPage() {
           txHash: txHash,
           url: `${window.location.origin}/claim`,
           seed: seed,
-          chainId:chainId.toString()
+          chainId: chainId.toString()
         })
-        alert(url)
+        setGeneratedLink(url)
       }
 
       setShowConfetti(true)
+      setShowAlert(true)
       setTimeout(() => setShowConfetti(false), 5000) // Hide confetti after 5 seconds
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending tokens:", error)
-      alert("An error occurred while sending tokens. Please try again.")
+      setShowAlert(true)
+      setGeneratedLink(null)
     } finally {
       setIsLoading(false)
     }
-    if (selectedAsset === "Token") {
-      alert("not yet implemented");
-      return;
-    }
-    if (selectedAsset === "NFT") {
-      alert("not yet implemented");
-      return;
-    }
-
+  }
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode)
+    const newDarkMode = !isDarkMode
+    setIsDarkMode(newDarkMode)
+    localStorage.setItem('theme', newDarkMode ? 'dark' : 'light')
+    if (newDarkMode) {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
   }
 
   const handleBackClick = () => {
     router.push("/")
   }
-  }
 
+  const copyToClipboard = () => {
+    if (generatedLink) {
+      navigator.clipboard.writeText(generatedLink)
+      setIsCopied(true)
+      setTimeout(() => setIsCopied(false), 2000)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 p-4">
@@ -308,7 +320,7 @@ export default function SendPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
                   <button
-                    // onClick={handleBackClick}
+                    onClick={handleBackClick}
                     className="mr-2 text-gray-600 dark:text-gray-300 hover:text-[#00E676] transition-colors duration-300"
                     aria-label="Go back to home page"
                   >
@@ -319,7 +331,7 @@ export default function SendPage() {
                   </h1>
                 </div>
                 <button
-                  // onClick={toggleDarkMode}
+                  onClick={toggleDarkMode}
                   className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300"
                   aria-label={
                     isDarkMode ? "Switch to light mode" : "Switch to dark mode"
@@ -468,6 +480,60 @@ export default function SendPage() {
                   )}
                 </motion.button>
               </form>
+
+              <AnimatePresence>
+                {showAlert && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="mt-6 p-4 bg-green-100 dark:bg-green-800 rounded-lg"
+                  >
+                    <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
+                      {generatedLink ? "Transaction Successful!" : "Transaction Failed"}
+                    </h3>
+                    {generatedLink ? (
+                      <>
+                        <p className="text-sm text-green-700 dark:text-green-300 mb-2">
+                          Your link has been generated:
+                        </p>
+                        <div className="flex items-center justify-between bg-white dark:bg-gray-700 p-2 rounded mb-4">
+                          <p className="text-sm text-gray-600 dark:text-gray-300 truncate mr-2">
+                            {generatedLink}
+                          </p>
+                          <button
+                            onClick={copyToClipboard}
+                            className="p-2 bg-[#00E676] rounded-full text-white hover:bg-[#00BFA5] transition-colors duration-300"
+                            aria-label="Copy link"
+                          >
+                            {isCopied ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                        <div className="flex justify-center mb-4">
+                         <QRCodeCanvas value={generatedLink}/>
+                        </div>
+                        <p className="text-sm text-green-700 dark:text-green-300 text-center">
+                          Scan this QR code to open the link
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-red-700 dark:text-red-300 mb-2">
+                        An error occurred while sending tokens. Please try again.
+                      </p>
+                    )}
+                    <button
+                      onClick={() => setShowAlert(false)}
+                      className="mt-4 w-full py-2 px-4 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors duration-300"
+                    >
+                      OK
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </Then>
           <Else>

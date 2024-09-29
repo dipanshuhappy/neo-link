@@ -57,12 +57,12 @@ Tired of long wallet addresses? Say goodbye to the hassle of sharing wallet addr
 
 ## **How to Set Up Locally**
 
-Setting up the project is a breeze! Just follow these steps:
+Setting up the project is a breeze! Just follow these steps for frontend:
 
 1. **Clone the repo**  
    ```bash
    git clone https://github.com/yourusername/your-repo-name.git
-   cd your-repo-name
+   cd neo-link-website
    ```
 
 2. **Install dependencies**  
@@ -72,14 +72,12 @@ Setting up the project is a breeze! Just follow these steps:
    ```
 
 3. **Set up environment variables**  
-   Create a `.env.local` file in the root directory with the following content:  
+   Create a `.env` file in the neo-link-website directory with the following content:  
    ```
-   NEXT_PUBLIC_WALLET=<your-wallet>
-   NEXT_PUBLIC_CONTRACT_ADDRESS=<contract-address>
+   PRIVATE_KEY=<your-wallet-key>
+   
    ```
-
-4. **Configure WAGMI**  
-   Update the contract address in the `wagmi.config.js` file with your smart contract details.
+   This is used for paying gas fees for gasless claims
 
 5. **Run the development server**  
    Start your project with:  
@@ -91,6 +89,12 @@ Setting up the project is a breeze! Just follow these steps:
    Go to `http://localhost:3000` in your browser, and you're all set!
 
 ---
+
+## **Smart Contract**
+The smart contract are mainly 
+1. NeoLink at ```neo-link-contracts/src/NeoLink.sol```. This is responsible for handling payment links and gasless claims
+
+2. NeolinkRaffle  at ```neo-link-contracts/src/NeoLinkRaffle.sol``` responsible for batch creation of links with a randomised amount at a random index
 
 ## **How it Works**
 
@@ -129,6 +133,15 @@ We welcome all contributions! Feel free to open a pull request or issue.
 This project is licensed under the MIT License.
 
 ---
+
+
+## **Resources**
+https://neo-link-two.vercel.app/
+
+NeoLink - https://xt4scan.ngd.network/address/0xd7CA94B80A47d0f8A879a3621F90bd4061832982
+
+NeoLink Raffle
+https://xt4scan.ngd.network/address/0x35b1EeE0dD4F3a9c29972fA0EDE87CBA6E97cDed
 
 Happy hacking! 👨‍💻👩‍💻
 

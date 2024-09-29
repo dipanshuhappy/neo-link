@@ -68,29 +68,46 @@ contract NeoLinkRaffle {
         require(_contractType == 0 || _contractType == 1, "ONLY ETH AND ERC20 RAFFLES ARE SUPPORTED");
 
         neolink = NeoLink(_neoLinkAddress);
+        uint256[] memory shuffledAmounts = shuffleAmounts(_amounts);
+
         if (_contractType == 1) {
             _setAllowanceIfZero(_tokenAddress, _neoLinkAddress);
             uint256 totalAmount;
-            for (uint256 i = 0; i < _amounts.length; i++) {
-                totalAmount += _amounts[i];
+            for (uint256 i = 0; i < shuffledAmounts.length; i++) {
+                totalAmount += shuffledAmounts[i];
             }
-            IERC20(_tokenAddress).safeTransferFrom(msg.sender, address(this), totalAmount);
+            IERC20(_tokenAddress).transferFrom(msg.sender, address(this), totalAmount);
         }
 
-        uint256[] memory depositIndexes = new uint256[](_amounts.length);
+        uint256[] memory depositIndexes = new uint256[](shuffledAmounts.length);
 
-        for (uint256 i = 0; i < _amounts.length; i++) {
+        for (uint256 i = 0; i < shuffledAmounts.length; i++) {
             uint256 etherAmount;
 
             if (_contractType == 0) {
-                etherAmount = _amounts[i];
+                etherAmount = shuffledAmounts[i];
             }
 
             depositIndexes[i] = neolink.makeSelflessDeposit{value: etherAmount}(
-                _tokenAddress, _contractType, _amounts[i], 0, _pubKey20, msg.sender
+                _tokenAddress, _contractType, shuffledAmounts[i], 0, _pubKey20, msg.sender
             );
         }
 
         return depositIndexes;
+    }
+
+    // Fisher-Yates shuffle algorithm to shuffle the _amounts array
+    function shuffleAmounts(uint256[] memory _amounts) internal view returns (uint256[] memory) {
+        uint256[] memory shuffled = _amounts;
+        uint256 n = shuffled.length;
+        for (uint256 i = n - 1; i > 0; i--) {
+            uint256 j = random(i + 1) % (i + 1);
+            (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]);
+        }
+        return shuffled;
+    }
+
+    function random(uint256 seed) public view returns (uint256) {
+        return uint256(keccak256(abi.encodePacked(block.prevrandao, block.timestamp, seed, msg.sender)));
     }
 }

@@ -63,6 +63,90 @@ export const ecdsaAbi = [
 ] as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ERC1967Utils
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const erc1967UtilsAbi = [
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'previousAdmin',
+        internalType: 'address',
+        type: 'address',
+        indexed: false,
+      },
+      {
+        name: 'newAdmin',
+        internalType: 'address',
+        type: 'address',
+        indexed: false,
+      },
+    ],
+    name: 'AdminChanged',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'beacon',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+    ],
+    name: 'BeaconUpgraded',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'implementation',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+    ],
+    name: 'Upgraded',
+  },
+  {
+    type: 'error',
+    inputs: [{ name: 'admin', internalType: 'address', type: 'address' }],
+    name: 'ERC1967InvalidAdmin',
+  },
+  {
+    type: 'error',
+    inputs: [{ name: 'beacon', internalType: 'address', type: 'address' }],
+    name: 'ERC1967InvalidBeacon',
+  },
+  {
+    type: 'error',
+    inputs: [
+      { name: 'implementation', internalType: 'address', type: 'address' },
+    ],
+    name: 'ERC1967InvalidImplementation',
+  },
+  { type: 'error', inputs: [], name: 'ERC1967NonPayable' },
+] as const
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// IBeacon
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const iBeaconAbi = [
+  {
+    type: 'function',
+    inputs: [],
+    name: 'implementation',
+    outputs: [{ name: '', internalType: 'address', type: 'address' }],
+    stateMutability: 'view',
+  },
+] as const
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // IEIP3009
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -327,6 +411,20 @@ export const ierc1271Abi = [
     ],
     name: 'isValidSignature',
     outputs: [{ name: 'magicValue', internalType: 'bytes4', type: 'bytes4' }],
+    stateMutability: 'view',
+  },
+] as const
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// IERC1822Proxiable
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const ierc1822ProxiableAbi = [
+  {
+    type: 'function',
+    inputs: [],
+    name: 'proxiableUUID',
+    outputs: [{ name: '', internalType: 'bytes32', type: 'bytes32' }],
     stateMutability: 'view',
   },
 ] as const
@@ -736,6 +834,28 @@ export const iMulticall3Abi = [
     ],
     stateMutability: 'payable',
   },
+] as const
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Initializable
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const initializableAbi = [
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'version',
+        internalType: 'uint64',
+        type: 'uint64',
+        indexed: false,
+      },
+    ],
+    name: 'Initialized',
+  },
+  { type: 'error', inputs: [], name: 'InvalidInitialization' },
+  { type: 'error', inputs: [], name: 'NotInitializing' },
 ] as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1283,6 +1403,13 @@ export const neoLinkRaffleAbi = [
     stateMutability: 'view',
   },
   {
+    type: 'function',
+    inputs: [{ name: 'seed', internalType: 'uint256', type: 'uint256' }],
+    name: 'random',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
     type: 'error',
     inputs: [{ name: 'target', internalType: 'address', type: 'address' }],
     name: 'AddressEmptyCode',
@@ -1304,7 +1431,7 @@ export const neoLinkRaffleAbi = [
  *
  */
 export const neoLinkRaffleAddress = {
-  12227332: '0x94d047D515DDe5b171cb7aD69C71F0d4Fcdc9213',
+  12227332: '0x35b1EeE0dD4F3a9c29972fA0EDE87CBA6E97cDed',
 } as const
 
 /**
@@ -1314,6 +1441,492 @@ export const neoLinkRaffleConfig = {
   address: neoLinkRaffleAddress,
   abi: neoLinkRaffleAbi,
 } as const
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Reclaim
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const reclaimAbi = [
+  {
+    type: 'function',
+    inputs: [],
+    name: 'UPGRADE_INTERFACE_VERSION',
+    outputs: [{ name: '', internalType: 'string', type: 'string' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      {
+        name: 'witnesses',
+        internalType: 'struct Reclaim.Witness[]',
+        type: 'tuple[]',
+        components: [
+          { name: 'addr', internalType: 'address', type: 'address' },
+          { name: 'host', internalType: 'string', type: 'string' },
+        ],
+      },
+      {
+        name: 'requisiteWitnessesForClaimCreate',
+        internalType: 'uint8',
+        type: 'uint8',
+      },
+    ],
+    name: 'addNewEpoch',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'id', internalType: 'uint256', type: 'uint256' }],
+    name: 'createDapp',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'provider', internalType: 'string', type: 'string' },
+      { name: 'merkleTreeDepth', internalType: 'uint256', type: 'uint256' },
+    ],
+    name: 'createGroup',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'currentEpoch',
+    outputs: [{ name: '', internalType: 'uint32', type: 'uint32' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'epochDurationS',
+    outputs: [{ name: '', internalType: 'uint32', type: 'uint32' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    name: 'epochs',
+    outputs: [
+      { name: 'id', internalType: 'uint32', type: 'uint32' },
+      { name: 'timestampStart', internalType: 'uint32', type: 'uint32' },
+      { name: 'timestampEnd', internalType: 'uint32', type: 'uint32' },
+      {
+        name: 'minimumWitnessesForClaimCreation',
+        internalType: 'uint8',
+        type: 'uint8',
+      },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'data', internalType: 'string', type: 'string' },
+      { name: 'target', internalType: 'string', type: 'string' },
+    ],
+    name: 'extractFieldFromContext',
+    outputs: [{ name: '', internalType: 'string', type: 'string' }],
+    stateMutability: 'pure',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'epoch', internalType: 'uint32', type: 'uint32' }],
+    name: 'fetchEpoch',
+    outputs: [
+      {
+        name: '',
+        internalType: 'struct Reclaim.Epoch',
+        type: 'tuple',
+        components: [
+          { name: 'id', internalType: 'uint32', type: 'uint32' },
+          { name: 'timestampStart', internalType: 'uint32', type: 'uint32' },
+          { name: 'timestampEnd', internalType: 'uint32', type: 'uint32' },
+          {
+            name: 'witnesses',
+            internalType: 'struct Reclaim.Witness[]',
+            type: 'tuple[]',
+            components: [
+              { name: 'addr', internalType: 'address', type: 'address' },
+              { name: 'host', internalType: 'string', type: 'string' },
+            ],
+          },
+          {
+            name: 'minimumWitnessesForClaimCreation',
+            internalType: 'uint8',
+            type: 'uint8',
+          },
+        ],
+      },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'epoch', internalType: 'uint32', type: 'uint32' },
+      { name: 'identifier', internalType: 'bytes32', type: 'bytes32' },
+      { name: 'timestampS', internalType: 'uint32', type: 'uint32' },
+    ],
+    name: 'fetchWitnessesForClaim',
+    outputs: [
+      {
+        name: '',
+        internalType: 'struct Reclaim.Witness[]',
+        type: 'tuple[]',
+        components: [
+          { name: 'addr', internalType: 'address', type: 'address' },
+          { name: 'host', internalType: 'string', type: 'string' },
+        ],
+      },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'provider', internalType: 'string', type: 'string' },
+      { name: 'params', internalType: 'string', type: 'string' },
+    ],
+    name: 'getMerkelizedUserParams',
+    outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      {
+        name: 'proof',
+        internalType: 'struct Reclaim.Proof',
+        type: 'tuple',
+        components: [
+          {
+            name: 'claimInfo',
+            internalType: 'struct Claims.ClaimInfo',
+            type: 'tuple',
+            components: [
+              { name: 'provider', internalType: 'string', type: 'string' },
+              { name: 'parameters', internalType: 'string', type: 'string' },
+              { name: 'context', internalType: 'string', type: 'string' },
+            ],
+          },
+          {
+            name: 'signedClaim',
+            internalType: 'struct Claims.SignedClaim',
+            type: 'tuple',
+            components: [
+              {
+                name: 'claim',
+                internalType: 'struct Claims.CompleteClaimData',
+                type: 'tuple',
+                components: [
+                  {
+                    name: 'identifier',
+                    internalType: 'bytes32',
+                    type: 'bytes32',
+                  },
+                  { name: 'owner', internalType: 'address', type: 'address' },
+                  {
+                    name: 'timestampS',
+                    internalType: 'uint32',
+                    type: 'uint32',
+                  },
+                  { name: 'epoch', internalType: 'uint32', type: 'uint32' },
+                ],
+              },
+              { name: 'signatures', internalType: 'bytes[]', type: 'bytes[]' },
+            ],
+          },
+        ],
+      },
+    ],
+    name: 'getProviderFromProof',
+    outputs: [{ name: '', internalType: 'string', type: 'string' }],
+    stateMutability: 'pure',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: '_semaphoreAddress', internalType: 'address', type: 'address' },
+    ],
+    name: 'initialize',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      {
+        name: 'proof',
+        internalType: 'struct Reclaim.Proof',
+        type: 'tuple',
+        components: [
+          {
+            name: 'claimInfo',
+            internalType: 'struct Claims.ClaimInfo',
+            type: 'tuple',
+            components: [
+              { name: 'provider', internalType: 'string', type: 'string' },
+              { name: 'parameters', internalType: 'string', type: 'string' },
+              { name: 'context', internalType: 'string', type: 'string' },
+            ],
+          },
+          {
+            name: 'signedClaim',
+            internalType: 'struct Claims.SignedClaim',
+            type: 'tuple',
+            components: [
+              {
+                name: 'claim',
+                internalType: 'struct Claims.CompleteClaimData',
+                type: 'tuple',
+                components: [
+                  {
+                    name: 'identifier',
+                    internalType: 'bytes32',
+                    type: 'bytes32',
+                  },
+                  { name: 'owner', internalType: 'address', type: 'address' },
+                  {
+                    name: 'timestampS',
+                    internalType: 'uint32',
+                    type: 'uint32',
+                  },
+                  { name: 'epoch', internalType: 'uint32', type: 'uint32' },
+                ],
+              },
+              { name: 'signatures', internalType: 'bytes[]', type: 'bytes[]' },
+            ],
+          },
+        ],
+      },
+      { name: '_identityCommitment', internalType: 'uint256', type: 'uint256' },
+    ],
+    name: 'merkelizeUser',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'proxiableUUID',
+    outputs: [{ name: '', internalType: 'bytes32', type: 'bytes32' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'semaphoreAddress',
+    outputs: [{ name: '', internalType: 'address', type: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'newImplementation', internalType: 'address', type: 'address' },
+      { name: 'data', internalType: 'bytes', type: 'bytes' },
+    ],
+    name: 'upgradeToAndCall',
+    outputs: [],
+    stateMutability: 'payable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'provider', internalType: 'string', type: 'string' },
+      { name: '_merkleTreeRoot', internalType: 'uint256', type: 'uint256' },
+      { name: '_signal', internalType: 'uint256', type: 'uint256' },
+      { name: '_nullifierHash', internalType: 'uint256', type: 'uint256' },
+      { name: '_externalNullifier', internalType: 'uint256', type: 'uint256' },
+      { name: 'dappId', internalType: 'bytes32', type: 'bytes32' },
+      { name: '_proof', internalType: 'uint256[8]', type: 'uint256[8]' },
+    ],
+    name: 'verifyMerkelIdentity',
+    outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      {
+        name: 'proof',
+        internalType: 'struct Reclaim.Proof',
+        type: 'tuple',
+        components: [
+          {
+            name: 'claimInfo',
+            internalType: 'struct Claims.ClaimInfo',
+            type: 'tuple',
+            components: [
+              { name: 'provider', internalType: 'string', type: 'string' },
+              { name: 'parameters', internalType: 'string', type: 'string' },
+              { name: 'context', internalType: 'string', type: 'string' },
+            ],
+          },
+          {
+            name: 'signedClaim',
+            internalType: 'struct Claims.SignedClaim',
+            type: 'tuple',
+            components: [
+              {
+                name: 'claim',
+                internalType: 'struct Claims.CompleteClaimData',
+                type: 'tuple',
+                components: [
+                  {
+                    name: 'identifier',
+                    internalType: 'bytes32',
+                    type: 'bytes32',
+                  },
+                  { name: 'owner', internalType: 'address', type: 'address' },
+                  {
+                    name: 'timestampS',
+                    internalType: 'uint32',
+                    type: 'uint32',
+                  },
+                  { name: 'epoch', internalType: 'uint32', type: 'uint32' },
+                ],
+              },
+              { name: 'signatures', internalType: 'bytes[]', type: 'bytes[]' },
+            ],
+          },
+        ],
+      },
+    ],
+    name: 'verifyProof',
+    outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'dappId',
+        internalType: 'bytes32',
+        type: 'bytes32',
+        indexed: true,
+      },
+    ],
+    name: 'DappCreated',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'epoch',
+        internalType: 'struct Reclaim.Epoch',
+        type: 'tuple',
+        components: [
+          { name: 'id', internalType: 'uint32', type: 'uint32' },
+          { name: 'timestampStart', internalType: 'uint32', type: 'uint32' },
+          { name: 'timestampEnd', internalType: 'uint32', type: 'uint32' },
+          {
+            name: 'witnesses',
+            internalType: 'struct Reclaim.Witness[]',
+            type: 'tuple[]',
+            components: [
+              { name: 'addr', internalType: 'address', type: 'address' },
+              { name: 'host', internalType: 'string', type: 'string' },
+            ],
+          },
+          {
+            name: 'minimumWitnessesForClaimCreation',
+            internalType: 'uint8',
+            type: 'uint8',
+          },
+        ],
+        indexed: false,
+      },
+    ],
+    name: 'EpochAdded',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'groupId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: true,
+      },
+      {
+        name: 'provider',
+        internalType: 'string',
+        type: 'string',
+        indexed: true,
+      },
+    ],
+    name: 'GroupCreated',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'version',
+        internalType: 'uint64',
+        type: 'uint64',
+        indexed: false,
+      },
+    ],
+    name: 'Initialized',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'implementation',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+    ],
+    name: 'Upgraded',
+  },
+  {
+    type: 'error',
+    inputs: [{ name: 'target', internalType: 'address', type: 'address' }],
+    name: 'AddressEmptyCode',
+  },
+  { type: 'error', inputs: [], name: 'ECDSAInvalidSignature' },
+  {
+    type: 'error',
+    inputs: [{ name: 'length', internalType: 'uint256', type: 'uint256' }],
+    name: 'ECDSAInvalidSignatureLength',
+  },
+  {
+    type: 'error',
+    inputs: [{ name: 's', internalType: 'bytes32', type: 'bytes32' }],
+    name: 'ECDSAInvalidSignatureS',
+  },
+  {
+    type: 'error',
+    inputs: [
+      { name: 'implementation', internalType: 'address', type: 'address' },
+    ],
+    name: 'ERC1967InvalidImplementation',
+  },
+  { type: 'error', inputs: [], name: 'ERC1967NonPayable' },
+  { type: 'error', inputs: [], name: 'FailedInnerCall' },
+  { type: 'error', inputs: [], name: 'InvalidInitialization' },
+  { type: 'error', inputs: [], name: 'NotInitializing' },
+  { type: 'error', inputs: [], name: 'Reclaim__GroupAlreadyExists' },
+  { type: 'error', inputs: [], name: 'Reclaim__UserAlreadyMerkelized' },
+  { type: 'error', inputs: [], name: 'UUPSUnauthorizedCallContext' },
+  {
+    type: 'error',
+    inputs: [{ name: 'slot', internalType: 'bytes32', type: 'bytes32' }],
+    name: 'UUPSUnsupportedProxiableUUID',
+  },
+] as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ReentrancyGuard
@@ -1345,6 +1958,60 @@ export const safeErc20Abi = [
 ] as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SemaphoreInterface
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const semaphoreInterfaceAbi = [
+  {
+    type: 'function',
+    inputs: [
+      { name: 'groupId', internalType: 'uint256', type: 'uint256' },
+      { name: 'identityCommitment', internalType: 'uint256', type: 'uint256' },
+    ],
+    name: 'addMember',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'groupId', internalType: 'uint256', type: 'uint256' },
+      { name: 'merkleTreeDepth', internalType: 'uint256', type: 'uint256' },
+      { name: 'admin', internalType: 'address', type: 'address' },
+    ],
+    name: 'createGroup',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'groupId', internalType: 'uint256', type: 'uint256' },
+      { name: 'identityCommitment', internalType: 'uint256', type: 'uint256' },
+      { name: 'proofSiblings', internalType: 'uint256[]', type: 'uint256[]' },
+      { name: 'proofPathIndices', internalType: 'uint8[]', type: 'uint8[]' },
+    ],
+    name: 'removeMember',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'groupId', internalType: 'uint256', type: 'uint256' },
+      { name: 'merkleTreeRoot', internalType: 'uint256', type: 'uint256' },
+      { name: 'signal', internalType: 'uint256', type: 'uint256' },
+      { name: 'nullifierHash', internalType: 'uint256', type: 'uint256' },
+      { name: 'externalNullifier', internalType: 'uint256', type: 'uint256' },
+      { name: 'proof', internalType: 'uint256[8]', type: 'uint256[8]' },
+    ],
+    name: 'verifyProof',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+] as const
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Strings
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1356,6 +2023,70 @@ export const stringsAbi = [
       { name: 'length', internalType: 'uint256', type: 'uint256' },
     ],
     name: 'StringsInsufficientHexLength',
+  },
+] as const
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// UUPSUpgradeable
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const uupsUpgradeableAbi = [
+  {
+    type: 'function',
+    inputs: [],
+    name: 'UPGRADE_INTERFACE_VERSION',
+    outputs: [{ name: '', internalType: 'string', type: 'string' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'proxiableUUID',
+    outputs: [{ name: '', internalType: 'bytes32', type: 'bytes32' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'newImplementation', internalType: 'address', type: 'address' },
+      { name: 'data', internalType: 'bytes', type: 'bytes' },
+    ],
+    name: 'upgradeToAndCall',
+    outputs: [],
+    stateMutability: 'payable',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'implementation',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+    ],
+    name: 'Upgraded',
+  },
+  {
+    type: 'error',
+    inputs: [{ name: 'target', internalType: 'address', type: 'address' }],
+    name: 'AddressEmptyCode',
+  },
+  {
+    type: 'error',
+    inputs: [
+      { name: 'implementation', internalType: 'address', type: 'address' },
+    ],
+    name: 'ERC1967InvalidImplementation',
+  },
+  { type: 'error', inputs: [], name: 'ERC1967NonPayable' },
+  { type: 'error', inputs: [], name: 'FailedInnerCall' },
+  { type: 'error', inputs: [], name: 'UUPSUnauthorizedCallContext' },
+  {
+    type: 'error',
+    inputs: [{ name: 'slot', internalType: 'bytes32', type: 'bytes32' }],
+    name: 'UUPSUnsupportedProxiableUUID',
   },
 ] as const
 
@@ -1408,6 +2139,53 @@ export const useSimulateDeployScriptRun =
     abi: deployScriptAbi,
     functionName: 'run',
   })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link erc1967UtilsAbi}__
+ */
+export const useWatchErc1967UtilsEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({ abi: erc1967UtilsAbi })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link erc1967UtilsAbi}__ and `eventName` set to `"AdminChanged"`
+ */
+export const useWatchErc1967UtilsAdminChangedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: erc1967UtilsAbi,
+    eventName: 'AdminChanged',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link erc1967UtilsAbi}__ and `eventName` set to `"BeaconUpgraded"`
+ */
+export const useWatchErc1967UtilsBeaconUpgradedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: erc1967UtilsAbi,
+    eventName: 'BeaconUpgraded',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link erc1967UtilsAbi}__ and `eventName` set to `"Upgraded"`
+ */
+export const useWatchErc1967UtilsUpgradedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: erc1967UtilsAbi,
+    eventName: 'Upgraded',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link iBeaconAbi}__
+ */
+export const useReadIBeacon = /*#__PURE__*/ createUseReadContract({
+  abi: iBeaconAbi,
+})
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link iBeaconAbi}__ and `functionName` set to `"implementation"`
+ */
+export const useReadIBeaconImplementation = /*#__PURE__*/ createUseReadContract(
+  { abi: iBeaconAbi, functionName: 'implementation' },
+)
 
 /**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link ieip3009Abi}__
@@ -1709,6 +2487,22 @@ export const useReadIerc1271IsValidSignature =
   /*#__PURE__*/ createUseReadContract({
     abi: ierc1271Abi,
     functionName: 'isValidSignature',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link ierc1822ProxiableAbi}__
+ */
+export const useReadIerc1822Proxiable = /*#__PURE__*/ createUseReadContract({
+  abi: ierc1822ProxiableAbi,
+})
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link ierc1822ProxiableAbi}__ and `functionName` set to `"proxiableUUID"`
+ */
+export const useReadIerc1822ProxiableProxiableUuid =
+  /*#__PURE__*/ createUseReadContract({
+    abi: ierc1822ProxiableAbi,
+    functionName: 'proxiableUUID',
   })
 
 /**
@@ -2138,6 +2932,21 @@ export const useSimulateIMulticall3TryBlockAndAggregate =
   /*#__PURE__*/ createUseSimulateContract({
     abi: iMulticall3Abi,
     functionName: 'tryBlockAndAggregate',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link initializableAbi}__
+ */
+export const useWatchInitializableEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({ abi: initializableAbi })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link initializableAbi}__ and `eventName` set to `"Initialized"`
+ */
+export const useWatchInitializableInitializedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: initializableAbi,
+    eventName: 'Initialized',
   })
 
 /**
@@ -2744,6 +3553,17 @@ export const useReadNeoLinkRaffleNeolink = /*#__PURE__*/ createUseReadContract({
 })
 
 /**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link neoLinkRaffleAbi}__ and `functionName` set to `"random"`
+ *
+ *
+ */
+export const useReadNeoLinkRaffleRandom = /*#__PURE__*/ createUseReadContract({
+  abi: neoLinkRaffleAbi,
+  address: neoLinkRaffleAddress,
+  functionName: 'random',
+})
+
+/**
  * Wraps __{@link useWriteContract}__ with `abi` set to __{@link neoLinkRaffleAbi}__
  *
  *
@@ -2808,4 +3628,465 @@ export const useSimulateNeoLinkRaffleBatchMakeDepositRaffle =
     abi: neoLinkRaffleAbi,
     address: neoLinkRaffleAddress,
     functionName: 'batchMakeDepositRaffle',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link reclaimAbi}__
+ */
+export const useReadReclaim = /*#__PURE__*/ createUseReadContract({
+  abi: reclaimAbi,
+})
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"UPGRADE_INTERFACE_VERSION"`
+ */
+export const useReadReclaimUpgradeInterfaceVersion =
+  /*#__PURE__*/ createUseReadContract({
+    abi: reclaimAbi,
+    functionName: 'UPGRADE_INTERFACE_VERSION',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"currentEpoch"`
+ */
+export const useReadReclaimCurrentEpoch = /*#__PURE__*/ createUseReadContract({
+  abi: reclaimAbi,
+  functionName: 'currentEpoch',
+})
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"epochDurationS"`
+ */
+export const useReadReclaimEpochDurationS = /*#__PURE__*/ createUseReadContract(
+  { abi: reclaimAbi, functionName: 'epochDurationS' },
+)
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"epochs"`
+ */
+export const useReadReclaimEpochs = /*#__PURE__*/ createUseReadContract({
+  abi: reclaimAbi,
+  functionName: 'epochs',
+})
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"extractFieldFromContext"`
+ */
+export const useReadReclaimExtractFieldFromContext =
+  /*#__PURE__*/ createUseReadContract({
+    abi: reclaimAbi,
+    functionName: 'extractFieldFromContext',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"fetchEpoch"`
+ */
+export const useReadReclaimFetchEpoch = /*#__PURE__*/ createUseReadContract({
+  abi: reclaimAbi,
+  functionName: 'fetchEpoch',
+})
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"fetchWitnessesForClaim"`
+ */
+export const useReadReclaimFetchWitnessesForClaim =
+  /*#__PURE__*/ createUseReadContract({
+    abi: reclaimAbi,
+    functionName: 'fetchWitnessesForClaim',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"getMerkelizedUserParams"`
+ */
+export const useReadReclaimGetMerkelizedUserParams =
+  /*#__PURE__*/ createUseReadContract({
+    abi: reclaimAbi,
+    functionName: 'getMerkelizedUserParams',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"getProviderFromProof"`
+ */
+export const useReadReclaimGetProviderFromProof =
+  /*#__PURE__*/ createUseReadContract({
+    abi: reclaimAbi,
+    functionName: 'getProviderFromProof',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"proxiableUUID"`
+ */
+export const useReadReclaimProxiableUuid = /*#__PURE__*/ createUseReadContract({
+  abi: reclaimAbi,
+  functionName: 'proxiableUUID',
+})
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"semaphoreAddress"`
+ */
+export const useReadReclaimSemaphoreAddress =
+  /*#__PURE__*/ createUseReadContract({
+    abi: reclaimAbi,
+    functionName: 'semaphoreAddress',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link reclaimAbi}__
+ */
+export const useWriteReclaim = /*#__PURE__*/ createUseWriteContract({
+  abi: reclaimAbi,
+})
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"addNewEpoch"`
+ */
+export const useWriteReclaimAddNewEpoch = /*#__PURE__*/ createUseWriteContract({
+  abi: reclaimAbi,
+  functionName: 'addNewEpoch',
+})
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"createDapp"`
+ */
+export const useWriteReclaimCreateDapp = /*#__PURE__*/ createUseWriteContract({
+  abi: reclaimAbi,
+  functionName: 'createDapp',
+})
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"createGroup"`
+ */
+export const useWriteReclaimCreateGroup = /*#__PURE__*/ createUseWriteContract({
+  abi: reclaimAbi,
+  functionName: 'createGroup',
+})
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"initialize"`
+ */
+export const useWriteReclaimInitialize = /*#__PURE__*/ createUseWriteContract({
+  abi: reclaimAbi,
+  functionName: 'initialize',
+})
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"merkelizeUser"`
+ */
+export const useWriteReclaimMerkelizeUser =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: reclaimAbi,
+    functionName: 'merkelizeUser',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"upgradeToAndCall"`
+ */
+export const useWriteReclaimUpgradeToAndCall =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: reclaimAbi,
+    functionName: 'upgradeToAndCall',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"verifyMerkelIdentity"`
+ */
+export const useWriteReclaimVerifyMerkelIdentity =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: reclaimAbi,
+    functionName: 'verifyMerkelIdentity',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"verifyProof"`
+ */
+export const useWriteReclaimVerifyProof = /*#__PURE__*/ createUseWriteContract({
+  abi: reclaimAbi,
+  functionName: 'verifyProof',
+})
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link reclaimAbi}__
+ */
+export const useSimulateReclaim = /*#__PURE__*/ createUseSimulateContract({
+  abi: reclaimAbi,
+})
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"addNewEpoch"`
+ */
+export const useSimulateReclaimAddNewEpoch =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: reclaimAbi,
+    functionName: 'addNewEpoch',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"createDapp"`
+ */
+export const useSimulateReclaimCreateDapp =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: reclaimAbi,
+    functionName: 'createDapp',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"createGroup"`
+ */
+export const useSimulateReclaimCreateGroup =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: reclaimAbi,
+    functionName: 'createGroup',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"initialize"`
+ */
+export const useSimulateReclaimInitialize =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: reclaimAbi,
+    functionName: 'initialize',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"merkelizeUser"`
+ */
+export const useSimulateReclaimMerkelizeUser =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: reclaimAbi,
+    functionName: 'merkelizeUser',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"upgradeToAndCall"`
+ */
+export const useSimulateReclaimUpgradeToAndCall =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: reclaimAbi,
+    functionName: 'upgradeToAndCall',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"verifyMerkelIdentity"`
+ */
+export const useSimulateReclaimVerifyMerkelIdentity =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: reclaimAbi,
+    functionName: 'verifyMerkelIdentity',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link reclaimAbi}__ and `functionName` set to `"verifyProof"`
+ */
+export const useSimulateReclaimVerifyProof =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: reclaimAbi,
+    functionName: 'verifyProof',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link reclaimAbi}__
+ */
+export const useWatchReclaimEvent = /*#__PURE__*/ createUseWatchContractEvent({
+  abi: reclaimAbi,
+})
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link reclaimAbi}__ and `eventName` set to `"DappCreated"`
+ */
+export const useWatchReclaimDappCreatedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: reclaimAbi,
+    eventName: 'DappCreated',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link reclaimAbi}__ and `eventName` set to `"EpochAdded"`
+ */
+export const useWatchReclaimEpochAddedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: reclaimAbi,
+    eventName: 'EpochAdded',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link reclaimAbi}__ and `eventName` set to `"GroupCreated"`
+ */
+export const useWatchReclaimGroupCreatedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: reclaimAbi,
+    eventName: 'GroupCreated',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link reclaimAbi}__ and `eventName` set to `"Initialized"`
+ */
+export const useWatchReclaimInitializedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: reclaimAbi,
+    eventName: 'Initialized',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link reclaimAbi}__ and `eventName` set to `"Upgraded"`
+ */
+export const useWatchReclaimUpgradedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: reclaimAbi,
+    eventName: 'Upgraded',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link semaphoreInterfaceAbi}__
+ */
+export const useWriteSemaphoreInterface = /*#__PURE__*/ createUseWriteContract({
+  abi: semaphoreInterfaceAbi,
+})
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link semaphoreInterfaceAbi}__ and `functionName` set to `"addMember"`
+ */
+export const useWriteSemaphoreInterfaceAddMember =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: semaphoreInterfaceAbi,
+    functionName: 'addMember',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link semaphoreInterfaceAbi}__ and `functionName` set to `"createGroup"`
+ */
+export const useWriteSemaphoreInterfaceCreateGroup =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: semaphoreInterfaceAbi,
+    functionName: 'createGroup',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link semaphoreInterfaceAbi}__ and `functionName` set to `"removeMember"`
+ */
+export const useWriteSemaphoreInterfaceRemoveMember =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: semaphoreInterfaceAbi,
+    functionName: 'removeMember',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link semaphoreInterfaceAbi}__ and `functionName` set to `"verifyProof"`
+ */
+export const useWriteSemaphoreInterfaceVerifyProof =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: semaphoreInterfaceAbi,
+    functionName: 'verifyProof',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link semaphoreInterfaceAbi}__
+ */
+export const useSimulateSemaphoreInterface =
+  /*#__PURE__*/ createUseSimulateContract({ abi: semaphoreInterfaceAbi })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link semaphoreInterfaceAbi}__ and `functionName` set to `"addMember"`
+ */
+export const useSimulateSemaphoreInterfaceAddMember =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: semaphoreInterfaceAbi,
+    functionName: 'addMember',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link semaphoreInterfaceAbi}__ and `functionName` set to `"createGroup"`
+ */
+export const useSimulateSemaphoreInterfaceCreateGroup =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: semaphoreInterfaceAbi,
+    functionName: 'createGroup',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link semaphoreInterfaceAbi}__ and `functionName` set to `"removeMember"`
+ */
+export const useSimulateSemaphoreInterfaceRemoveMember =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: semaphoreInterfaceAbi,
+    functionName: 'removeMember',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link semaphoreInterfaceAbi}__ and `functionName` set to `"verifyProof"`
+ */
+export const useSimulateSemaphoreInterfaceVerifyProof =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: semaphoreInterfaceAbi,
+    functionName: 'verifyProof',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link uupsUpgradeableAbi}__
+ */
+export const useReadUupsUpgradeable = /*#__PURE__*/ createUseReadContract({
+  abi: uupsUpgradeableAbi,
+})
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link uupsUpgradeableAbi}__ and `functionName` set to `"UPGRADE_INTERFACE_VERSION"`
+ */
+export const useReadUupsUpgradeableUpgradeInterfaceVersion =
+  /*#__PURE__*/ createUseReadContract({
+    abi: uupsUpgradeableAbi,
+    functionName: 'UPGRADE_INTERFACE_VERSION',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link uupsUpgradeableAbi}__ and `functionName` set to `"proxiableUUID"`
+ */
+export const useReadUupsUpgradeableProxiableUuid =
+  /*#__PURE__*/ createUseReadContract({
+    abi: uupsUpgradeableAbi,
+    functionName: 'proxiableUUID',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link uupsUpgradeableAbi}__
+ */
+export const useWriteUupsUpgradeable = /*#__PURE__*/ createUseWriteContract({
+  abi: uupsUpgradeableAbi,
+})
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link uupsUpgradeableAbi}__ and `functionName` set to `"upgradeToAndCall"`
+ */
+export const useWriteUupsUpgradeableUpgradeToAndCall =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: uupsUpgradeableAbi,
+    functionName: 'upgradeToAndCall',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link uupsUpgradeableAbi}__
+ */
+export const useSimulateUupsUpgradeable =
+  /*#__PURE__*/ createUseSimulateContract({ abi: uupsUpgradeableAbi })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link uupsUpgradeableAbi}__ and `functionName` set to `"upgradeToAndCall"`
+ */
+export const useSimulateUupsUpgradeableUpgradeToAndCall =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: uupsUpgradeableAbi,
+    functionName: 'upgradeToAndCall',
+  })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link uupsUpgradeableAbi}__
+ */
+export const useWatchUupsUpgradeableEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({ abi: uupsUpgradeableAbi })
+
+/**
+ * Wraps __{@link useWatchContractEvent}__ with `abi` set to __{@link uupsUpgradeableAbi}__ and `eventName` set to `"Upgraded"`
+ */
+export const useWatchUupsUpgradeableUpgradedEvent =
+  /*#__PURE__*/ createUseWatchContractEvent({
+    abi: uupsUpgradeableAbi,
+    eventName: 'Upgraded',
   })

@@ -194,13 +194,7 @@ export default function EnhancedClaimPage() {
           </div>
           <div className="mb-6">
             <div className="flex items-center space-x-2">
-              <Checkbox
-                id="gaslessClaim"
-                checked={isGaslessClaim}
-                onCheckedChange={(checked) =>
-                  setIsGaslessClaim(checked as boolean)
-                }
-              />
+              <Checkbox id="gaslessClaim" checked={isGaslessClaim} />
               <Label
                 htmlFor="gaslessClaim"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -244,9 +238,13 @@ export default function EnhancedClaimPage() {
                     ? "Claim Successful!"
                     : "Claim Failed"}
                 </h3>
-                <p className="text-sm text-green-700 dark:text-green-300">
-                  {alertMessage}
-                </p>
+                <a
+                  href={`https://xt4scan.ngd.network/tx/${alertMessage.replace("Transaction sent: ", "")}`}
+                  className="text-ns text-green-700 underline  dark:text-green-300 text-wrap"
+                  target="_blank"
+                >
+                  explorer link
+                </a>
                 <button
                   onClick={() => setShowAlert(false)}
                   className="mt-4 w-full py-2 px-4 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors duration-300 flex items-center justify-center"

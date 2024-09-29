@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { writeContract, readContract } from "@wagmi/core";
+
 import {
   ArrowLeft,
   Moon,
@@ -21,14 +22,15 @@ import {
   shuffleArray,
   ValidChainId,
 } from "@/lib/utils";
-import { useAccount, useChainId } from "wagmi";
+import { useAccount, useChainId, useWriteContract } from "wagmi";
 import { Case, Default, Switch } from "react-if";
 import WalletConnect from "@/components/NavBar";
-import { neoLinkAddress } from "@/lib/smart-contract";
+import { neoLinkAddress, neoLinkRaffleAddress } from "@/lib/smart-contract";
 import { useWriteNeoLinkRaffleBatchMakeDepositRaffle } from "@/lib/smart-contract";
 import { NULL_ADDRESS } from "@/lib/constants";
 import { TailSpin } from "react-loader-spinner";
 import { erc20Abi } from "viem";
+import { waitForTransactionReceipt } from "@wagmi/core";
 import { config } from "@/lib/config";
 
 function RaffleAmount({
@@ -88,6 +90,23 @@ function RaffleAmount({
                 value={tokenAddress}
                 onChange={(e) => setTokenAddress(e.target.value)}
                 placeholder="0x..."
+                className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <Zap className="h-5 w-5 text-[#00E676]" />
+              </div>
+            </div>
+          </div>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Amount
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
                 className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -159,6 +178,8 @@ export default function RafflePage() {
     setIsDarkMode((prevMode) => !prevMode);
   };
 
+  const { writeContractAsync } = useWriteContract();
+
   const handleBackClick = () => {
     router.push("/");
   };
@@ -216,9 +237,28 @@ export default function RafflePage() {
           functionName: "decimals",
           address: tokenAddress as `0x${string}`,
         });
+        const raffleAddress =
+          await neoLinkRaffleAddress[
+            chainId as keyof typeof neoLinkRaffleAddress
+          ];
+        console.log({ decimals });
+        console.log({ finalAmount });
+        console.log({ ethAmount });
         finalAmount = parseInt(
           (parseFloat(ethAmount) * 10 ** decimals).toString()
         );
+        console.log({ finalAmount });
+        const approveTx = await writeContractAsync({
+          abi: erc20Abi,
+          address: tokenAddress as `0x${string}`,
+          functionName: "approve",
+          args: [raffleAddress, BigInt(finalAmount)],
+        });
+
+        await waitForTransactionReceipt(config, {
+          hash: approveTx,
+        });
+
         tx = await createRaffles({
           args: [
             vaultAddress as `0x${string}`,

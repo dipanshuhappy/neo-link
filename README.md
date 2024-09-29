@@ -1,7 +1,7 @@
 # 🚀 **Blockchain Payment Simplified** 🌐
 
 <div align="center">
-  <img src="./public/images/image1.png" alt="Landing Page" width="80%" style="margin: 20px 0; padding: 10px;">
+  <img src="./neo-link-website/public/images/image1.png" alt="Landing Page" width="80%" style="margin: 20px 0; padding: 10px;">
 </div>
 
 ## **Introduction**
@@ -22,35 +22,35 @@ Tired of long wallet addresses? Say goodbye to the hassle of sharing wallet addr
   Just go to the **Send Tokens** page, select your preferred asset, enter the amount, and generate a unique payment link. The recipient can claim the tokens without connecting their wallet.  
   
   <div align="center">
-    <img src="./public/images/image2.png" alt="Send Page" width="80%" style="margin: 20px 0; padding: 10px;">
+    <img src="./neo-link-website/public/images/image2.png" alt="Send Page" width="80%" style="margin: 20px 0; padding: 10px;">
   </div>
 
 - **Gasless Claims** ⚡  
   Recipients can claim tokens by simply pasting their EVM wallet address, without the need for gas fees or wallet connection.  
   
   <div align="center">
-    <img src="./public/images/image3.png" alt="Claim Page" width="80%" style="margin: 20px 0; padding: 10px;">
+    <img src="./neo-link-website/public/images/image3.png" alt="Claim Page" width="80%" style="margin: 20px 0; padding: 10px;">
   </div>
 
 - **Create a Raffle** 🎟️  
   Engage with your community by setting up raffles! Token holders can participate for a chance to win crypto.  
   
   <div align="center">
-    <img src="./public/images/image4.png" alt="Raffle Page" width="80%" style="margin: 20px 0; padding: 10px;">
+    <img src="./neo-link-website/public/images/image4.png" alt="Raffle Page" width="80%" style="margin: 20px 0; padding: 10px;">
   </div>
 
 - **Social Auth Linked Airdrop** - Coming soon... ✈️  
   Distribute tokens seamlessly through airdrops, making it easy to reward your users.  
   
   <div align="center">
-    <img src="./public/images/image5.png" alt="Airdrop Page" width="80%" style="margin: 20px 0; padding: 10px;">
+    <img src="./neo-link-website/public/images/image5.png" alt="Airdrop Page" width="80%" style="margin: 20px 0; padding: 10px;">
   </div>
 
 - **Documentation** 📄 _Coming Soon_  
   Stay tuned! We'll be adding comprehensive documentation for developers and users soon.  
   
   <div align="center">
-    <img src="./public/images/image6.png" alt="Docs Page" width="80%" style="margin: 20px 0; padding: 10px;">
+    <img src="./neo-link-website/public/images/image6.png" alt="Docs Page" width="80%" style="margin: 20px 0; padding: 10px;">
   </div>
 
 ---

@@ -1,9 +1,18 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, Moon, Sun, Zap, ChevronDown, Copy, Check } from "lucide-react"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { writeContract, readContract } from "@wagmi/core";
+import {
+  ArrowLeft,
+  Moon,
+  Sun,
+  Zap,
+  ChevronDown,
+  Copy,
+  Check,
+} from "lucide-react";
 import {
   generateKeyFromString,
   getChain,
@@ -11,14 +20,16 @@ import {
   getRandomString,
   shuffleArray,
   ValidChainId,
-} from "@/lib/utils"
-import { useAccount, useChainId } from "wagmi"
-import { Case, Default, Switch } from "react-if"
-import WalletConnect from "@/components/NavBar"
-import { neoLinkAddress } from "@/lib/smart-contract"
-import { useWriteNeoLinkRaffleBatchMakeDepositRaffle } from "@/lib/smart-contract"
-import { NULL_ADDRESS } from "@/lib/constants"
-import { TailSpin } from "react-loader-spinner"
+} from "@/lib/utils";
+import { useAccount, useChainId } from "wagmi";
+import { Case, Default, Switch } from "react-if";
+import WalletConnect from "@/components/NavBar";
+import { neoLinkAddress } from "@/lib/smart-contract";
+import { useWriteNeoLinkRaffleBatchMakeDepositRaffle } from "@/lib/smart-contract";
+import { NULL_ADDRESS } from "@/lib/constants";
+import { TailSpin } from "react-loader-spinner";
+import { erc20Abi } from "viem";
+import { config } from "@/lib/config";
 
 function RaffleAmount({
   amount,
@@ -28,16 +39,16 @@ function RaffleAmount({
   setTokenAddress,
   tokenAddress,
 }: {
-  amount: string
-  setAmount: React.Dispatch<React.SetStateAction<string>>
-  selectedAsset: string
-  setSelectedAsset: React.Dispatch<React.SetStateAction<string>>
-  tokenAddress: string
-  setTokenAddress: React.Dispatch<React.SetStateAction<string>>
+  amount: string;
+  setAmount: React.Dispatch<React.SetStateAction<string>>;
+  selectedAsset: string;
+  setSelectedAsset: React.Dispatch<React.SetStateAction<string>>;
+  tokenAddress: string;
+  setTokenAddress: React.Dispatch<React.SetStateAction<string>>;
 }) {
-  const chainId = useChainId()
+  const chainId = useChainId();
 
-  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol
+  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol;
   return (
     <>
       <div className="mb-6">
@@ -106,79 +117,83 @@ function RaffleAmount({
         </Default>
       </Switch>
     </>
-  )
+  );
 }
 
 export default function RafflePage() {
-  const router = useRouter()
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const chainId = useChainId()
-  const chain = getChain(chainId as ValidChainId)
-  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol
-  const [selectedAsset, setSelectedAsset] = useState<string>(symbol)
-  const [selectedChain, setSelectedChain] = useState<string>(chain.name)
-  const [ethAmount, setEthAmount] = useState("")
-  const [numSlots, setNumSlots] = useState("")
-  const [displayName, setDisplayName] = useState("")
-  const [tokenAddress, setTokenAddress] = useState<string>("")
-  const { address } = useAccount()
+  const router = useRouter();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const chainId = useChainId();
+  const chain = getChain(chainId as ValidChainId);
+  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol;
+  const [selectedAsset, setSelectedAsset] = useState<string>(symbol);
+  const [selectedChain, setSelectedChain] = useState<string>(chain.name);
+  const [ethAmount, setEthAmount] = useState("");
+  const [numSlots, setNumSlots] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [tokenAddress, setTokenAddress] = useState<string>("");
+  const { address } = useAccount();
 
-  const [isLoading, setIsLoading] = useState(false)
-  const [generatedLinks, setGeneratedLinks] = useState<string[]>([])
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+  const [isLoading, setIsLoading] = useState(false);
+  const [generatedLinks, setGeneratedLinks] = useState<string[]>([]);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const { writeContractAsync: createRaffles } =
-    useWriteNeoLinkRaffleBatchMakeDepositRaffle()
+    useWriteNeoLinkRaffleBatchMakeDepositRaffle();
 
   useEffect(() => {
-    const darkModePreference = localStorage.getItem("darkMode")
-    setIsDarkMode(darkModePreference === "true")
-  }, [])
+    const darkModePreference = localStorage.getItem("darkMode");
+    setIsDarkMode(darkModePreference === "true");
+  }, []);
 
   useEffect(() => {
     if (isDarkMode) {
-      document.documentElement.classList.add("dark")
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove("dark")
+      document.documentElement.classList.remove("dark");
     }
-    localStorage.setItem("darkMode", isDarkMode.toString())
-  }, [isDarkMode])
+    localStorage.setItem("darkMode", isDarkMode.toString());
+  }, [isDarkMode]);
 
   const toggleDarkMode = () => {
-    setIsDarkMode((prevMode) => !prevMode)
-  }
+    setIsDarkMode((prevMode) => !prevMode);
+  };
 
   const handleBackClick = () => {
-    router.push("/")
-  }
+    router.push("/");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
     try {
       console.log("Creating raffle:", {
         selectedChain,
         ethAmount,
         numSlots,
         displayName,
-      })
+      });
 
       if (!address) {
-        throw new Error("Please connect your wallet")
+        throw new Error("Please connect your wallet");
       }
       if (parseInt(numSlots) < 1) {
-        throw new Error("Invalid number of slots")
+        throw new Error("Invalid number of slots");
       }
-      const vaultAddress = neoLinkAddress[chainId as keyof typeof neoLinkAddress]
-      const seed = await getRandomString(16)
+      const vaultAddress =
+        neoLinkAddress[chainId as keyof typeof neoLinkAddress];
+      const seed = await getRandomString(16);
       if (!vaultAddress) {
-        throw new Error("Vault address not found")
+        throw new Error("Vault address not found");
       }
+      let tx = "";
+
+      let finalAmount = parseInt(
+        (parseFloat(ethAmount) * 10 ** chain.nativeCurrency.decimals).toString()
+      );
+
       if (selectedAsset === symbol) {
-        const finalAmount = parseInt(
-          (parseFloat(ethAmount) * 10 ** chain.nativeCurrency.decimals).toString()
-        )
-        const tx = await createRaffles({
+        tx = await createRaffles({
           args: [
             vaultAddress as `0x${string}`,
             NULL_ADDRESS,
@@ -190,31 +205,55 @@ export default function RafflePage() {
             generateKeyFromString(seed).address,
           ],
           value: BigInt(finalAmount),
-        })
-
-        const links = await getLinksForRaffles({
-          txHash: tx,
-          chainId: chainId.toString(),
-          url: `${window.location.origin}/claim`,
-          seed,
-          amount: parseInt(numSlots),
-        })
-        console.log({ links })
-        setGeneratedLinks(links)
+        });
       }
+      if (selectedAsset === "Token") {
+        if (!tokenAddress) {
+          throw new Error("Token address is required");
+        }
+        let decimals = await readContract(config, {
+          abi: erc20Abi,
+          functionName: "decimals",
+          address: tokenAddress as `0x${string}`,
+        });
+        finalAmount = parseInt(
+          (parseFloat(ethAmount) * 10 ** decimals).toString()
+        );
+        tx = await createRaffles({
+          args: [
+            vaultAddress as `0x${string}`,
+            tokenAddress as `0x${string}`,
+            1,
+            shuffleArray<bigint>([
+              ...Array(parseInt(numSlots) - 1).fill(BigInt(0)),
+              BigInt(finalAmount),
+            ]),
+            generateKeyFromString(seed).address,
+          ],
+        });
+      }
+      const links = await getLinksForRaffles({
+        txHash: tx,
+        chainId: chainId.toString(),
+        url: `${window.location.origin}/claim`,
+        seed,
+        amount: parseInt(numSlots),
+      });
+      console.log({ links });
+      setGeneratedLinks(links);
     } catch (error: any) {
-      console.error("Error creating raffle:", error)
-      alert(error.message || "An error occurred while creating the raffle")
+      console.error("Error creating raffle:", error);
+      alert(error.message || "An error occurred while creating the raffle");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const copyToClipboard = (link: string, index: number) => {
-    navigator.clipboard.writeText(link)
-    setCopiedIndex(index)
-    setTimeout(() => setCopiedIndex(null), 2000)
-  }
+    navigator.clipboard.writeText(link);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 p-4">
@@ -320,7 +359,10 @@ export default function RafflePage() {
                 </h3>
                 <div className="space-y-2">
                   {generatedLinks.map((link, index) => (
-                    <div key={index} className="flex items-center justify-between bg-white dark:bg-gray-600 p-2 rounded">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between bg-white dark:bg-gray-600 p-2 rounded"
+                    >
                       <p className="text-sm text-gray-600 dark:text-gray-300 truncate mr-2">
                         {link}
                       </p>
@@ -344,5 +386,5 @@ export default function RafflePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

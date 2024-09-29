@@ -1,8 +1,9 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { waitForTransactionReceipt } from "@wagmi/core";
 import {
   Zap,
   Link,
@@ -18,28 +19,35 @@ import {
   ChevronDown,
   Copy,
   Check,
-} from "lucide-react"
-import { ConnectWalletButton } from "./NavBar"
-import { useAccount, useChainId } from "wagmi"
-import { Case, Default, Else, If, Switch, Then } from "react-if"
+} from "lucide-react";
+import { ConnectWalletButton } from "./NavBar";
+import { useAccount, useChainId, useWriteContract } from "wagmi";
+import { Case, Default, Else, If, Switch, Then } from "react-if";
+import { writeContract, readContract } from "@wagmi/core";
 import {
   generateKeyFromString,
   getChain,
   getLinkForNativeToken,
   getRandomString,
   ValidChainId,
-} from "@/lib/utils"
-import { useWriteNeoLinkMakeCustomDeposit } from "@/lib/smart-contract"
-import { NULL_ADDRESS } from "@/lib/constants"
-import { TailSpin } from "react-loader-spinner"
-import dynamic from 'next/dynamic'
-import {QRCodeSVG, QRCodeCanvas} from 'qrcode.react'
+} from "@/lib/utils";
+import {
+  neoLinkAddress,
+  useWriteNeoLinkMakeCustomDeposit,
+} from "@/lib/smart-contract";
+import { NULL_ADDRESS } from "@/lib/constants";
+import { TailSpin } from "react-loader-spinner";
+import dynamic from "next/dynamic";
+import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
+import { config } from "@/lib/config";
+import { erc20Abi } from "viem";
+import { hash } from "crypto";
 
-const Confetti = dynamic(() => import('react-confetti'), { ssr: false })
+const Confetti = dynamic(() => import("react-confetti"), { ssr: false });
 
-type Token = "NEO" | "GAS" | "ETH" | "USDC"
+type Token = "NEO" | "GAS" | "ETH" | "USDC";
 
-type AssetType = "Token" | "NFT" | string
+type AssetType = "Token" | "NFT" | string;
 
 function SendAmount({
   amount,
@@ -53,20 +61,20 @@ function SendAmount({
   setNftId,
   nftId,
 }: {
-  amount: string
-  setAmount: React.Dispatch<React.SetStateAction<string>>
-  selectedAsset: AssetType
-  setSelectedAsset: React.Dispatch<React.SetStateAction<AssetType>>
-  tokenAddress: string
-  setTokenAddress: React.Dispatch<React.SetStateAction<string>>
-  nftAddress: string
-  setNftAddress: React.Dispatch<React.SetStateAction<string>>
-  nftId: string
-  setNftId: React.Dispatch<React.SetStateAction<string>>
+  amount: string;
+  setAmount: React.Dispatch<React.SetStateAction<string>>;
+  selectedAsset: AssetType;
+  setSelectedAsset: React.Dispatch<React.SetStateAction<AssetType>>;
+  tokenAddress: string;
+  setTokenAddress: React.Dispatch<React.SetStateAction<string>>;
+  nftAddress: string;
+  setNftAddress: React.Dispatch<React.SetStateAction<string>>;
+  nftId: string;
+  setNftId: React.Dispatch<React.SetStateAction<string>>;
 }) {
-  const chainId = useChainId()
+  const chainId = useChainId();
 
-  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol
+  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol;
   return (
     <>
       <div className="mb-6">
@@ -82,7 +90,7 @@ function SendAmount({
               onChange={(e) => setSelectedAsset(e.target.value as AssetType)}
               className="w-full appearance-none bg-white dark:bg-gray-700 border-2 border-[#00E676] text-gray-700 dark:text-gray-200 py-2 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300"
             >
-              {([symbol, "Token", "NFT"] as AssetType[]).map((token) => (
+              {([symbol, "Token"] as AssetType[]).map((token) => (
                 <option key={token} value={token}>
                   {token}
                 </option>
@@ -171,50 +179,52 @@ function SendAmount({
         </Default>
       </Switch>
     </>
-  )
+  );
 }
 
 export default function SendPage() {
-  const router = useRouter()
-  const [sendMethod, setSendMethod] = useState<"link" | "direct">("link")
+  const router = useRouter();
+  const [sendMethod, setSendMethod] = useState<"link" | "direct">("link");
   const [recipientType, setRecipientType] = useState<
     "email" | "phone" | "ens" | "wallet"
-  >("email")
-  const [amount, setAmount] = useState("")
-  const [recipient, setRecipient] = useState("")
-  const chainId = useChainId()
-  const chain = getChain(chainId as ValidChainId)
+  >("email");
+  const [amount, setAmount] = useState("");
+  const [recipient, setRecipient] = useState("");
+  const chainId = useChainId();
+  const chain = getChain(chainId as ValidChainId);
 
-  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol
-  const [selectedAsset, setSelectedAsset] = useState<AssetType>(symbol)
-  const [tokenAddress, setTokenAddress] = useState<string>("")
-  const [nftAddress, setNftAddress] = useState<string>("")
-  const [nftId, setNftId] = useState<string>("")
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const { writeContractAsync: deposit } = useWriteNeoLinkMakeCustomDeposit()
+  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol;
+  const [selectedAsset, setSelectedAsset] = useState<AssetType>(symbol);
+  const [tokenAddress, setTokenAddress] = useState<string>("");
+  const [nftAddress, setNftAddress] = useState<string>("");
+  const [nftId, setNftId] = useState<string>("");
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { writeContractAsync: deposit } = useWriteNeoLinkMakeCustomDeposit();
 
-  const [isLoading, setIsLoading] = useState(false)
-  const [showConfetti, setShowConfetti] = useState(false)
-  const [generatedLink, setGeneratedLink] = useState<string | null>(null)
-  const [isCopied, setIsCopied] = useState(false)
-  const [showAlert, setShowAlert] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
-  const { address } = useAccount()
+  const { writeContractAsync } = useWriteContract();
+
+  const { address } = useAccount();
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme')
-    if (savedTheme === 'dark') {
-      setIsDarkMode(true)
-      document.documentElement.classList.add("dark")
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      setIsDarkMode(true);
+      document.documentElement.classList.add("dark");
     } else {
-      setIsDarkMode(false)
-      document.documentElement.classList.remove("dark")
+      setIsDarkMode(false);
+      document.documentElement.classList.remove("dark");
     }
-  }, [])
+  }, []);
 
   const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
     try {
       console.log(
         "Sending",
@@ -226,21 +236,26 @@ export default function SendPage() {
         recipient,
         "via",
         sendMethod
-      )
+      );
       if (!address) {
-        throw new Error("Please connect your wallet")
+        throw new Error("Please connect your wallet");
       }
 
       if (parseFloat(amount) < 0) {
-        throw new Error("Please enter a valid amount")
+        throw new Error("Please enter a valid amount");
       }
 
-      const finalAmount = parseInt(
+      let finalAmount = parseInt(
         (parseFloat(amount) * 10 ** chain.nativeCurrency.decimals).toString()
-      )
-      const seed = await getRandomString(16)
-      let txHash = ""
-
+      );
+      const vaultAddress =
+        neoLinkAddress[chainId as keyof typeof neoLinkAddress];
+      const seed = await getRandomString(16);
+      let txHash = "";
+      if (!vaultAddress) {
+        throw new Error("Vault address not found");
+        return;
+      }
       if (selectedAsset === symbol) {
         txHash = await deposit({
           args: [
@@ -257,11 +272,45 @@ export default function SendPage() {
             NULL_ADDRESS,
           ],
           value: BigInt(finalAmount),
-        })
+        });
       } else if (selectedAsset === "Token") {
-        throw new Error("Token transfers not yet implemented")
+        let decimals = await readContract(config, {
+          abi: erc20Abi,
+          functionName: "decimals",
+          address: tokenAddress as `0x${string}`,
+        });
+        finalAmount = parseInt(
+          (parseFloat(amount) * 10 ** decimals).toString()
+        );
+
+        const approveTx = await writeContractAsync({
+          abi: erc20Abi,
+          address: tokenAddress as `0x${string}`,
+          functionName: "approve",
+          args: [vaultAddress, BigInt(finalAmount)],
+        });
+
+        const approveReceipt = await waitForTransactionReceipt(config, {
+          hash: approveTx,
+        });
+
+        txHash = await deposit({
+          args: [
+            tokenAddress as `0x${string}`,
+            1,
+            BigInt(finalAmount),
+            BigInt(0),
+            generateKeyFromString(seed).address,
+            address,
+            false,
+            NULL_ADDRESS,
+            0,
+            false,
+            NULL_ADDRESS,
+          ],
+        });
       } else if (selectedAsset === "NFT") {
-        throw new Error("NFT transfers not yet implemented")
+        throw new Error("NFT transfers not yet implemented");
       }
 
       if (sendMethod === "link") {
@@ -270,45 +319,45 @@ export default function SendPage() {
           txHash: txHash,
           url: `${window.location.origin}/claim`,
           seed: seed,
-          chainId: chainId.toString()
-        })
-        setGeneratedLink(url)
+          chainId: chainId.toString(),
+        });
+        setGeneratedLink(url);
       }
 
-      setShowConfetti(true)
-      setShowAlert(true)
-      setTimeout(() => setShowConfetti(false), 5000) // Hide confetti after 5 seconds
+      setShowConfetti(true);
+      setShowAlert(true);
+      setTimeout(() => setShowConfetti(false), 5000); // Hide confetti after 5 seconds
     } catch (error: any) {
-      console.error("Error sending tokens:", error)
-      setShowAlert(true)
-      setGeneratedLink(null)
+      console.error("Error sending tokens:", error);
+      setShowAlert(true);
+      setGeneratedLink(null);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-    localStorage.setItem('theme', newDarkMode ? 'dark' : 'light')
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    localStorage.setItem("theme", newDarkMode ? "dark" : "light");
     if (newDarkMode) {
-      document.documentElement.classList.add("dark")
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove("dark")
+      document.documentElement.classList.remove("dark");
     }
-  }
+  };
 
   const handleBackClick = () => {
-    router.push("/")
-  }
+    router.push("/");
+  };
 
   const copyToClipboard = () => {
     if (generatedLink) {
-      navigator.clipboard.writeText(generatedLink)
-      setIsCopied(true)
-      setTimeout(() => setIsCopied(false), 2000)
+      navigator.clipboard.writeText(generatedLink);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 p-4">
@@ -475,8 +524,10 @@ export default function SendPage() {
                       color="white"
                       ariaLabel="loading"
                     />
+                  ) : sendMethod === "link" ? (
+                    "Create Link"
                   ) : (
-                    sendMethod === "link" ? "Create Link" : "Send Tokens"
+                    "Send Tokens"
                   )}
                 </motion.button>
               </form>
@@ -490,7 +541,9 @@ export default function SendPage() {
                     className="mt-6 p-4 bg-green-100 dark:bg-green-800 rounded-lg"
                   >
                     <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
-                      {generatedLink ? "Transaction Successful!" : "Transaction Failed"}
+                      {generatedLink
+                        ? "Transaction Successful!"
+                        : "Transaction Failed"}
                     </h3>
                     {generatedLink ? (
                       <>
@@ -514,7 +567,7 @@ export default function SendPage() {
                           </button>
                         </div>
                         <div className="flex justify-center mb-4">
-                         <QRCodeCanvas value={generatedLink}/>
+                          <QRCodeCanvas value={generatedLink} />
                         </div>
                         <p className="text-sm text-green-700 dark:text-green-300 text-center">
                           Scan this QR code to open the link
@@ -522,7 +575,8 @@ export default function SendPage() {
                       </>
                     ) : (
                       <p className="text-sm text-red-700 dark:text-red-300 mb-2">
-                        An error occurred while sending tokens. Please try again.
+                        An error occurred while sending tokens. Please try
+                        again.
                       </p>
                     )}
                     <button
@@ -544,5 +598,5 @@ export default function SendPage() {
         </If>
       </div>
     </div>
-  )
+  );
 }

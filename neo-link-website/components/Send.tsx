@@ -425,7 +425,7 @@ export default function SendPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className="mt-6 p-4 bg-green-100 dark:bg-green-800 rounded-lg"
+                    className="mt-6 p-4 bg-grey-500 dark:bg-grey-700 rounded-lg"
                   >
                     <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
                       {generatedLink

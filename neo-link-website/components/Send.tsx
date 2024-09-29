@@ -295,6 +295,8 @@ export default function SendPage() {
   const handleBackClick = () => {
     router.push("/")
   }
+  }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 p-4">
@@ -306,7 +308,7 @@ export default function SendPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
                   <button
-                    onClick={handleBackClick}
+                    // onClick={handleBackClick}
                     className="mr-2 text-gray-600 dark:text-gray-300 hover:text-[#00E676] transition-colors duration-300"
                     aria-label="Go back to home page"
                   >
@@ -317,7 +319,7 @@ export default function SendPage() {
                   </h1>
                 </div>
                 <button
-                  onClick={toggleDarkMode}
+                  // onClick={toggleDarkMode}
                   className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-300"
                   aria-label={
                     isDarkMode ? "Switch to light mode" : "Switch to dark mode"

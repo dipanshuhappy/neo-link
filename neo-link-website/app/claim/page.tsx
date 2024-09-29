@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import { ArrowLeft, Moon, Sun, Gift } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Moon, Sun, Gift, Check } from "lucide-react";
 import { ConnectWalletButton } from "@/components/NavBar";
 import { useAccount } from "wagmi";
 import { Else, If, Then } from "react-if";
@@ -13,63 +13,74 @@ import { Input } from "@/components/ui/input";
 import { encodeFunctionData } from "viem";
 import { generateKeyFromString, signWithdrawalMessage } from "@/lib/utils";
 import { neoLinkAbi, neoLinkAddress } from "@/lib/smart-contract";
+import { TailSpin } from "react-loader-spinner";
+import dynamic from 'next/dynamic';
+
+const Confetti = dynamic(() => import('react-confetti'), { ssr: false });
 
 export default function EnhancedClaimPage() {
   const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isGaslessClaim, setIsGaslessClaim] = useState(true);
   const [evmAddress, setEvmAddress] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   useEffect(() => {
-    if (isDarkMode) {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      setIsDarkMode(true);
       document.documentElement.classList.add("dark");
     } else {
+      setIsDarkMode(false);
       document.documentElement.classList.remove("dark");
     }
-  }, [isDarkMode]);
+  }, []);
+
   const searchParams = useSearchParams();
 
   const handleClaim = async () => {
-    console.log(
-      "Claiming assets",
-      isGaslessClaim ? "gaslessly" : "with gas",
-      "for address:",
-      evmAddress
-    );
-
-    const chainId = searchParams.get("c");
-    const seed = searchParams.get("s");
-    const depositId = searchParams.get("i");
-    if (!chainId || !seed || !depositId) {
-      alert("Invalid URL");
-      return;
-    }
-    const vaultAddress =
-      neoLinkAddress[parseInt(chainId) as keyof typeof neoLinkAddress];
-
-    if (!evmAddress) {
-      alert("Please enter your EVM address");
-      return;
-    }
-    if (!vaultAddress) {
-      alert("Vault address not found");
-      return;
-    }
-    const { recipient, depositIdx, signature } = await signWithdrawalMessage(
-      "1",
-      chainId.toString(),
-      vaultAddress,
-      parseInt(depositId),
-      evmAddress as `0x${string}`,
-      generateKeyFromString(seed).privateKey,
-      false
-    );
-    const data = encodeFunctionData({
-      abi: neoLinkAbi,
-      functionName: "withdrawDeposit",
-      args: [BigInt(depositIdx), recipient, signature],
-    });
+    setIsLoading(true);
     try {
+      console.log(
+        "Claiming assets",
+        isGaslessClaim ? "gaslessly" : "with gas",
+        "for address:",
+        evmAddress
+      );
+
+      const chainId = searchParams.get("c");
+      const seed = searchParams.get("s");
+      const depositId = searchParams.get("i");
+      if (!chainId || !seed || !depositId) {
+        throw new Error("Invalid URL");
+      }
+      const vaultAddress =
+        neoLinkAddress[parseInt(chainId) as keyof typeof neoLinkAddress];
+
+      if (!evmAddress) {
+        throw new Error("Please enter your EVM address");
+      }
+      if (!vaultAddress) {
+        throw new Error("Vault address not found");
+      }
+      const { recipient, depositIdx, signature } = await signWithdrawalMessage(
+        "1",
+        chainId.toString(),
+        vaultAddress,
+        parseInt(depositId),
+        evmAddress as `0x${string}`,
+        generateKeyFromString(seed).privateKey,
+        false
+      );
+      const data = encodeFunctionData({
+        abi: neoLinkAbi,
+        functionName: "withdrawDeposit",
+        args: [BigInt(depositIdx), recipient, signature],
+      });
+
       const response = await fetch("/api/send-transaction", {
         method: "POST",
         headers: {
@@ -83,19 +94,32 @@ export default function EnhancedClaimPage() {
       });
 
       if (!response.ok) {
-        console.error("Error in frontend:", response);
-        return;
+        throw new Error("Error in transaction");
       }
 
       const res = await response.json();
-      alert(`Transaction sent: ${res.hash}`);
+      setAlertMessage(`Transaction sent: ${res.hash}`);
+      setShowAlert(true);
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 5000); // Hide confetti after 5 seconds
     } catch (err: any) {
-      console.error("Error in frontend:", err);
+      console.error("Error in claim:", err);
+      setAlertMessage(err.message || "An error occurred while claiming assets");
+      setShowAlert(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
+    if (newDarkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   };
 
   const { address } = useAccount();
@@ -106,6 +130,7 @@ export default function EnhancedClaimPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 p-4">
+      {showConfetti && <Confetti />}
       <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
@@ -157,7 +182,11 @@ export default function EnhancedClaimPage() {
           </div>
           <div className="mb-6">
             <div className="flex items-center space-x-2">
-              <Checkbox id="gaslessClaim" checked={isGaslessClaim} />
+              <Checkbox
+                id="gaslessClaim"
+                checked={isGaslessClaim}
+                onCheckedChange={(checked) => setIsGaslessClaim(checked as boolean)}
+              />
               <Label
                 htmlFor="gaslessClaim"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -171,10 +200,47 @@ export default function EnhancedClaimPage() {
             className="w-full py-6 px-4 bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white rounded-lg font-bold text-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            disabled={isLoading}
           >
-            <Gift className="h-6 w-6" />
-            <span>Claim Your Assets</span>
+            {isLoading ? (
+              <TailSpin
+                height="24"
+                width="24"
+                color="white"
+                ariaLabel="loading"
+              />
+            ) : (
+              <>
+                <Gift className="h-6 w-6" />
+                <span>Claim Your Assets</span>
+              </>
+            )}
           </motion.button>
+
+          <AnimatePresence>
+            {showAlert && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mt-6 p-4 bg-green-100 dark:bg-green-800 rounded-lg"
+              >
+                <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
+                  {alertMessage.startsWith("Transaction sent") ? "Claim Successful!" : "Claim Failed"}
+                </h3>
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  {alertMessage}
+                </p>
+                <button
+                  onClick={() => setShowAlert(false)}
+                  className="mt-4 w-full py-2 px-4 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors duration-300 flex items-center justify-center"
+                >
+                  <Check className="h-5 w-5 mr-2" />
+                  OK
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

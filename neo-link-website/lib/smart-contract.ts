@@ -1241,6 +1241,81 @@ export const neoLinkConfig = {
 } as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// NeoLinkRaffle
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *
+ */
+export const neoLinkRaffleAbi = [
+  {
+    type: 'function',
+    inputs: [
+      { name: '_peanutAddress', internalType: 'address', type: 'address' },
+      { name: '_tokenAddress', internalType: 'address', type: 'address' },
+      { name: '_contractType', internalType: 'uint8', type: 'uint8' },
+      { name: '_amount', internalType: 'uint256', type: 'uint256' },
+      { name: '_tokenId', internalType: 'uint256', type: 'uint256' },
+      { name: '_pubKeys20', internalType: 'address[]', type: 'address[]' },
+    ],
+    name: 'batchMakeDeposit',
+    outputs: [{ name: '', internalType: 'uint256[]', type: 'uint256[]' }],
+    stateMutability: 'payable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: '_neoLinkAddress', internalType: 'address', type: 'address' },
+      { name: '_tokenAddress', internalType: 'address', type: 'address' },
+      { name: '_contractType', internalType: 'uint8', type: 'uint8' },
+      { name: '_amounts', internalType: 'uint256[]', type: 'uint256[]' },
+      { name: '_pubKey20', internalType: 'address', type: 'address' },
+    ],
+    name: 'batchMakeDepositRaffle',
+    outputs: [{ name: '', internalType: 'uint256[]', type: 'uint256[]' }],
+    stateMutability: 'payable',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'neolink',
+    outputs: [{ name: '', internalType: 'contract NeoLink', type: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'error',
+    inputs: [{ name: 'target', internalType: 'address', type: 'address' }],
+    name: 'AddressEmptyCode',
+  },
+  {
+    type: 'error',
+    inputs: [{ name: 'account', internalType: 'address', type: 'address' }],
+    name: 'AddressInsufficientBalance',
+  },
+  { type: 'error', inputs: [], name: 'FailedInnerCall' },
+  {
+    type: 'error',
+    inputs: [{ name: 'token', internalType: 'address', type: 'address' }],
+    name: 'SafeERC20FailedOperation',
+  },
+] as const
+
+/**
+ *
+ */
+export const neoLinkRaffleAddress = {
+  12227332: '0x94d047D515DDe5b171cb7aD69C71F0d4Fcdc9213',
+} as const
+
+/**
+ *
+ */
+export const neoLinkRaffleConfig = {
+  address: neoLinkRaffleAddress,
+  abi: neoLinkRaffleAbi,
+} as const
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ReentrancyGuard
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2645,4 +2720,92 @@ export const useWatchNeoLinkWithdrawEventEvent =
     abi: neoLinkAbi,
     address: neoLinkAddress,
     eventName: 'WithdrawEvent',
+  })
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link neoLinkRaffleAbi}__
+ *
+ *
+ */
+export const useReadNeoLinkRaffle = /*#__PURE__*/ createUseReadContract({
+  abi: neoLinkRaffleAbi,
+  address: neoLinkRaffleAddress,
+})
+
+/**
+ * Wraps __{@link useReadContract}__ with `abi` set to __{@link neoLinkRaffleAbi}__ and `functionName` set to `"neolink"`
+ *
+ *
+ */
+export const useReadNeoLinkRaffleNeolink = /*#__PURE__*/ createUseReadContract({
+  abi: neoLinkRaffleAbi,
+  address: neoLinkRaffleAddress,
+  functionName: 'neolink',
+})
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link neoLinkRaffleAbi}__
+ *
+ *
+ */
+export const useWriteNeoLinkRaffle = /*#__PURE__*/ createUseWriteContract({
+  abi: neoLinkRaffleAbi,
+  address: neoLinkRaffleAddress,
+})
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link neoLinkRaffleAbi}__ and `functionName` set to `"batchMakeDeposit"`
+ *
+ *
+ */
+export const useWriteNeoLinkRaffleBatchMakeDeposit =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: neoLinkRaffleAbi,
+    address: neoLinkRaffleAddress,
+    functionName: 'batchMakeDeposit',
+  })
+
+/**
+ * Wraps __{@link useWriteContract}__ with `abi` set to __{@link neoLinkRaffleAbi}__ and `functionName` set to `"batchMakeDepositRaffle"`
+ *
+ *
+ */
+export const useWriteNeoLinkRaffleBatchMakeDepositRaffle =
+  /*#__PURE__*/ createUseWriteContract({
+    abi: neoLinkRaffleAbi,
+    address: neoLinkRaffleAddress,
+    functionName: 'batchMakeDepositRaffle',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link neoLinkRaffleAbi}__
+ *
+ *
+ */
+export const useSimulateNeoLinkRaffle = /*#__PURE__*/ createUseSimulateContract(
+  { abi: neoLinkRaffleAbi, address: neoLinkRaffleAddress },
+)
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link neoLinkRaffleAbi}__ and `functionName` set to `"batchMakeDeposit"`
+ *
+ *
+ */
+export const useSimulateNeoLinkRaffleBatchMakeDeposit =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: neoLinkRaffleAbi,
+    address: neoLinkRaffleAddress,
+    functionName: 'batchMakeDeposit',
+  })
+
+/**
+ * Wraps __{@link useSimulateContract}__ with `abi` set to __{@link neoLinkRaffleAbi}__ and `functionName` set to `"batchMakeDepositRaffle"`
+ *
+ *
+ */
+export const useSimulateNeoLinkRaffleBatchMakeDepositRaffle =
+  /*#__PURE__*/ createUseSimulateContract({
+    abi: neoLinkRaffleAbi,
+    address: neoLinkRaffleAddress,
+    functionName: 'batchMakeDepositRaffle',
   })

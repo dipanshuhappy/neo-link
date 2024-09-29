@@ -94,7 +94,40 @@ export const getChain = (chainId: ValidChainId) => {
       return neoXTestnetT4;
   }
 };
-
+export const getLinksForRaffles = async ({
+  txHash,
+  chainId,
+  url,
+  seed,
+  amount,
+}: {
+  txHash: string;
+  chainId: string;
+  url: string;
+  seed: string;
+  amount: number;
+}) => {
+  const receipt = await waitForTransactionReceipt(config, {
+    hash: txHash as `0x${string}`,
+  });
+  const logs = parseEventLogs({
+    abi: neoLinkAbi,
+    logs: receipt.logs,
+    eventName: "DepositEvent",
+  });
+  const finalUrls = [];
+  if (logs.length !== amount) {
+    throw new Error("Invalid amount of logs");
+  }
+  for (const log of logs) {
+    const newUrl = new URL(url);
+    newUrl.searchParams.set("i", log.args._index.toString());
+    newUrl.searchParams.set("s", seed);
+    newUrl.searchParams.set("c", chainId);
+    finalUrls.push(newUrl.toString());
+  }
+  return finalUrls;
+};
 export const getLinkForNativeToken = async ({
   address,
   txHash,
@@ -124,3 +157,12 @@ export const getLinkForNativeToken = async ({
   newUrl.searchParams.set("c", chainId);
   return newUrl.toString();
 };
+
+export function shuffleArray<T>(array: T[]): T[] {
+  const shuffledArray = [...array]; // Create a copy to avoid mutating the original array
+  for (let i = shuffledArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+  }
+  return shuffledArray;
+}

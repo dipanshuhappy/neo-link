@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { ArrowLeft, Moon, Sun, Zap, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { motion, AnimatePresence } from "framer-motion"
+import { ArrowLeft, Moon, Sun, Zap, ChevronDown, Copy, Check } from "lucide-react"
 import {
   generateKeyFromString,
   getChain,
@@ -11,13 +11,14 @@ import {
   getRandomString,
   shuffleArray,
   ValidChainId,
-} from "@/lib/utils";
-import { useAccount, useChainId } from "wagmi";
-import { Case, Default, Switch } from "react-if";
-import WalletConnect from "@/components/NavBar";
-import { neoLinkAddress } from "@/lib/smart-contract";
-import { useWriteNeoLinkRaffleBatchMakeDepositRaffle } from "@/lib/smart-contract";
-import { NULL_ADDRESS } from "@/lib/constants";
+} from "@/lib/utils"
+import { useAccount, useChainId } from "wagmi"
+import { Case, Default, Switch } from "react-if"
+import WalletConnect from "@/components/NavBar"
+import { neoLinkAddress } from "@/lib/smart-contract"
+import { useWriteNeoLinkRaffleBatchMakeDepositRaffle } from "@/lib/smart-contract"
+import { NULL_ADDRESS } from "@/lib/constants"
+import { TailSpin } from "react-loader-spinner"
 
 function RaffleAmount({
   amount,
@@ -27,16 +28,16 @@ function RaffleAmount({
   setTokenAddress,
   tokenAddress,
 }: {
-  amount: string;
-  setAmount: React.Dispatch<React.SetStateAction<string>>;
-  selectedAsset: string;
-  setSelectedAsset: React.Dispatch<React.SetStateAction<string>>;
-  tokenAddress: string;
-  setTokenAddress: React.Dispatch<React.SetStateAction<string>>;
+  amount: string
+  setAmount: React.Dispatch<React.SetStateAction<string>>
+  selectedAsset: string
+  setSelectedAsset: React.Dispatch<React.SetStateAction<string>>
+  tokenAddress: string
+  setTokenAddress: React.Dispatch<React.SetStateAction<string>>
 }) {
-  const chainId = useChainId();
+  const chainId = useChainId()
 
-  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol;
+  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol
   return (
     <>
       <div className="mb-6">
@@ -64,150 +65,156 @@ function RaffleAmount({
           </div>
         </div>
       </div>
-      {
-        <Switch>
-          <Case condition={selectedAsset === "Token"}>
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Token Address
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={tokenAddress}
-                  onChange={(e) => setTokenAddress(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <Zap className="h-5 w-5 text-[#00E676]" />
-                </div>
+      <Switch>
+        <Case condition={selectedAsset === "Token"}>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Token Address
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={tokenAddress}
+                onChange={(e) => setTokenAddress(e.target.value)}
+                placeholder="0x..."
+                className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <Zap className="h-5 w-5 text-[#00E676]" />
               </div>
             </div>
-          </Case>
-          <Default>Enter Native Token Amount</Default>
-        </Switch>
-      }
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Amount
-        </label>
-        <div className="relative">
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-          />
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <Zap className="h-5 w-5 text-[#00E676]" />
-            <Zap className="h-5 w-5 text-[#00E676]" />
           </div>
-        </div>
-      </div>
+        </Case>
+        <Default>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Amount
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                className="w-full px-4 py-2 rounded-lg border-2 border-[#00E676] focus:outline-none focus:ring-2 focus:ring-[#00E676] focus:border-transparent transition-all duration-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <Zap className="h-5 w-5 text-[#00E676]" />
+              </div>
+            </div>
+          </div>
+        </Default>
+      </Switch>
     </>
-  );
+  )
 }
 
 export default function RafflePage() {
-  const router = useRouter();
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const chainId = useChainId();
-  const chain = getChain(chainId as ValidChainId);
-  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol;
-  const [selectedAsset, setSelectedAsset] = useState<string>(symbol);
-  const [selectedChain, setSelectedChain] = useState<string>(chain.name);
-  const [ethAmount, setEthAmount] = useState("");
-  const [numSlots, setNumSlots] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [tokenAddress, setTokenAddress] = useState<string>("");
-  const { address } = useAccount();
+  const router = useRouter()
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const chainId = useChainId()
+  const chain = getChain(chainId as ValidChainId)
+  const symbol = getChain(chainId as ValidChainId).nativeCurrency.symbol
+  const [selectedAsset, setSelectedAsset] = useState<string>(symbol)
+  const [selectedChain, setSelectedChain] = useState<string>(chain.name)
+  const [ethAmount, setEthAmount] = useState("")
+  const [numSlots, setNumSlots] = useState("")
+  const [displayName, setDisplayName] = useState("")
+  const [tokenAddress, setTokenAddress] = useState<string>("")
+  const { address } = useAccount()
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [generatedLinks, setGeneratedLinks] = useState<string[]>([])
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
 
   const { writeContractAsync: createRaffles } =
-    useWriteNeoLinkRaffleBatchMakeDepositRaffle();
+    useWriteNeoLinkRaffleBatchMakeDepositRaffle()
 
   useEffect(() => {
-    const darkModePreference = localStorage.getItem("darkMode");
-    setIsDarkMode(darkModePreference === "true");
-  }, []);
+    const darkModePreference = localStorage.getItem("darkMode")
+    setIsDarkMode(darkModePreference === "true")
+  }, [])
 
   useEffect(() => {
     if (isDarkMode) {
-      document.documentElement.classList.add("dark");
+      document.documentElement.classList.add("dark")
     } else {
-      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.remove("dark")
     }
-    localStorage.setItem("darkMode", isDarkMode.toString());
-  }, [isDarkMode]);
+    localStorage.setItem("darkMode", isDarkMode.toString())
+  }, [isDarkMode])
 
   const toggleDarkMode = () => {
-    setIsDarkMode((prevMode) => !prevMode);
-  };
+    setIsDarkMode((prevMode) => !prevMode)
+  }
 
   const handleBackClick = () => {
-    router.push("/");
-  };
+    router.push("/")
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Creating raffle:", {
-      selectedChain,
-      ethAmount,
-      numSlots,
-      displayName,
-    });
+    e.preventDefault()
+    setIsLoading(true)
+    try {
+      console.log("Creating raffle:", {
+        selectedChain,
+        ethAmount,
+        numSlots,
+        displayName,
+      })
 
-    if (!address) {
-      alert("Please connect your wallet");
-      return;
-    }
-    if (parseInt(numSlots) < 1) {
-      alert("Invalid number of slots");
-      return;
-    }
-    const vaultAddress = neoLinkAddress[chainId as keyof typeof neoLinkAddress];
-    const seed = await getRandomString(16);
-    if (!vaultAddress) {
-      alert("Vault address not found");
-      return;
-    }
-    if (selectedAsset === symbol) {
-      const finalAmount = parseInt(
-        (parseFloat(ethAmount) * 10 ** chain.nativeCurrency.decimals).toString()
-      );
-      const tx = await createRaffles({
-        args: [
-          vaultAddress as `0x${string}`,
-          NULL_ADDRESS,
-          0,
-          shuffleArray<bigint>([
-            ...Array(parseInt(numSlots) - 1).fill(BigInt(0)),
-            BigInt(finalAmount),
-          ]),
-          generateKeyFromString(seed).address,
-        ],
-        value: BigInt(finalAmount),
-      });
-
-      const links = await getLinksForRaffles({
-        txHash: tx,
-        chainId: chainId.toString(),
-        url: `${window.location.origin}/claim`,
-        seed,
-        amount: parseInt(numSlots),
-      });
-      console.log({ links });
-      for (const link of links) {
-        console.log({ link });
-        alert(`Raffle created: ${link}`);
+      if (!address) {
+        throw new Error("Please connect your wallet")
       }
+      if (parseInt(numSlots) < 1) {
+        throw new Error("Invalid number of slots")
+      }
+      const vaultAddress = neoLinkAddress[chainId as keyof typeof neoLinkAddress]
+      const seed = await getRandomString(16)
+      if (!vaultAddress) {
+        throw new Error("Vault address not found")
+      }
+      if (selectedAsset === symbol) {
+        const finalAmount = parseInt(
+          (parseFloat(ethAmount) * 10 ** chain.nativeCurrency.decimals).toString()
+        )
+        const tx = await createRaffles({
+          args: [
+            vaultAddress as `0x${string}`,
+            NULL_ADDRESS,
+            0,
+            shuffleArray<bigint>([
+              ...Array(parseInt(numSlots) - 1).fill(BigInt(0)),
+              BigInt(finalAmount),
+            ]),
+            generateKeyFromString(seed).address,
+          ],
+          value: BigInt(finalAmount),
+        })
 
-      console.log({ tx });
+        const links = await getLinksForRaffles({
+          txHash: tx,
+          chainId: chainId.toString(),
+          url: `${window.location.origin}/claim`,
+          seed,
+          amount: parseInt(numSlots),
+        })
+        console.log({ links })
+        setGeneratedLinks(links)
+      }
+    } catch (error: any) {
+      console.error("Error creating raffle:", error)
+      alert(error.message || "An error occurred while creating the raffle")
+    } finally {
+      setIsLoading(false)
     }
+  }
 
-    // Here you would typically send this data to your backend or smart contract
-  };
+  const copyToClipboard = (link: string, index: number) => {
+    navigator.clipboard.writeText(link)
+    setCopiedIndex(index)
+    setTimeout(() => setCopiedIndex(null), 2000)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300 p-4">
@@ -260,7 +267,7 @@ export default function RafflePage() {
                 htmlFor="numSlots"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
-                № of Lottery Links
+                No of Lottery Links
               </label>
               <input
                 type="number"
@@ -279,18 +286,63 @@ export default function RafflePage() {
             {address ? (
               <motion.button
                 type="submit"
-                className="w-full py-3 px-4 bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                className="w-full py-3 px-4 bg-gradient-to-r from-[#00E676] to-[#00BFA5] text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                disabled={isLoading}
               >
-                Create Links
+                {isLoading ? (
+                  <TailSpin
+                    height="24"
+                    width="24"
+                    color="white"
+                    ariaLabel="loading"
+                  />
+                ) : (
+                  "Create Links"
+                )}
               </motion.button>
             ) : (
               <WalletConnect />
             )}
           </form>
+
+          <AnimatePresence>
+            {generatedLinks.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mt-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg"
+              >
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                  Generated Links
+                </h3>
+                <div className="space-y-2">
+                  {generatedLinks.map((link, index) => (
+                    <div key={index} className="flex items-center justify-between bg-white dark:bg-gray-600 p-2 rounded">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 truncate mr-2">
+                        {link}
+                      </p>
+                      <button
+                        onClick={() => copyToClipboard(link, index)}
+                        className="p-2 bg-[#00E676] rounded-full text-white hover:bg-[#00BFA5] transition-colors duration-300"
+                        aria-label="Copy link"
+                      >
+                        {copiedIndex === index ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
-  );
+  )
 }
